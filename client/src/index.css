@@ -695,12 +695,14 @@ input:focus, textarea:focus, select:focus {
   z-index: var(--z-sidebar);
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transition: all var(--transition-normal);
 }
 
 .sidebar-overlay.visible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 .sidebar {
@@ -1431,6 +1433,8 @@ input:focus, textarea:focus, select:focus {
   background-color: var(--color-bg);
   background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
   background-size: 24px 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .login-card {
@@ -1441,6 +1445,8 @@ input:focus, textarea:focus, select:focus {
   border-radius: var(--radius-lg);
   padding: 36px 32px;
   box-shadow: var(--shadow-xl);
+  position: relative;
+  z-index: 10;
 }
 
 .login-badge {
@@ -1894,10 +1900,14 @@ input:focus, textarea:focus, select:focus {
   overflow-y: auto;
   transition: right var(--transition-slow);
   box-shadow: var(--shadow-xl);
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .notification-panel.open {
   right: 0;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .notification-item {
@@ -2033,6 +2043,7 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  pointer-events: none;
 }
 
 .toast {
@@ -2046,6 +2057,7 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  pointer-events: auto;
 }
 
 .toast-success {
@@ -2482,18 +2494,21 @@ input:focus, textarea:focus, select:focus {
     font-size: 1.35rem;
   }
 
-  /* Toast Notifikasi */
+  /* Toast Notifikasi Mobile */
   .toast-container {
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
     max-width: none;
     width: auto;
+    pointer-events: none;
   }
 
   .toast {
     width: 100%;
     font-size: 0.813rem;
+    pointer-events: auto;
   }
 
   /* Theme Grid */

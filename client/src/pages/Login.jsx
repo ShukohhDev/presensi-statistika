@@ -69,42 +69,36 @@ export function Login() {
                             id="name"
                             type="text"
                             className="form-input"
-                            placeholder="Contoh: Faqih Hidayatus Salam"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             disabled={loading}
-                            autoFocus
                             required
+                            autoComplete="name"
                         />
                     </div>
 
                     <div className="form-group">
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-xs)' }}>
-                            <label className="form-label" htmlFor="password" style={{ margin: 0 }}>
-                                Kata Sandi (NIM)
-                            </label>
-                            <span style={{ fontSize: '0.688rem', color: 'var(--color-text-muted)' }}>
-                                Nomor Induk Mahasiswa
-                            </span>
-                        </div>
+                        <label className="form-label" htmlFor="password">
+                            Kata Sandi (NIM)
+                        </label>
                         <div style={{ position: 'relative' }}>
                             <input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 className="form-input"
-                                placeholder="Masukkan NIM terdaftar"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 disabled={loading}
                                 required
-                                style={{ paddingRight: '44px', fontFamily: showPassword ? 'var(--font-mono)' : 'inherit' }}
+                                autoComplete="current-password"
+                                style={{ paddingRight: '46px', fontFamily: showPassword ? 'var(--font-mono)' : 'inherit' }}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 style={{
                                     position: 'absolute',
-                                    right: '6px',
+                                    right: '4px',
                                     top: '50%',
                                     transform: 'translateY(-50%)',
                                     background: 'none',
@@ -114,9 +108,11 @@ export function Login() {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: '6px',
-                                    borderRadius: 'var(--radius-sm)',
-                                    transition: 'color 0.15s ease'
+                                    padding: '8px',
+                                    width: '42px',
+                                    height: '42px',
+                                    zIndex: 5,
+                                    touchAction: 'manipulation'
                                 }}
                                 title={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                                 aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
@@ -136,9 +132,8 @@ export function Login() {
                     </button>
                 </form>
 
-                <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--color-border)', textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                    <div>Program Studi S1 Teknik Informatika - Angkatan 2025</div>
-                    <div style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>PJ MK: Faqih Hidayatus Salam</div>
+                <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--color-border)', textAlign: 'center', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                    <div>PJ MK: Faqih Hidayatus Salam</div>
                 </div>
             </div>
         </div>

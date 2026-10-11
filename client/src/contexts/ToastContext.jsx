@@ -20,16 +20,18 @@ export function ToastProvider({ children }) {
     return (
         <ToastContext.Provider value={{ addToast, removeToast }}>
             {children}
-            <div className="toast-container">
-                {toasts.map(toast => (
-                    <div
-                        key={toast.id}
-                        className={`toast toast-${toast.type}`}
-                        onClick={() => removeToast(toast.id)}
-                        style={{
-                            animation: 'slideInRight 0.3s ease forwards',
-                        }}
-                    >
+            {toasts.length > 0 && (
+                <div className="toast-container" style={{ pointerEvents: 'none' }}>
+                    {toasts.map(toast => (
+                        <div
+                            key={toast.id}
+                            className={`toast toast-${toast.type}`}
+                            onClick={() => removeToast(toast.id)}
+                            style={{
+                                animation: 'slideInRight 0.3s ease forwards',
+                                pointerEvents: 'auto'
+                            }}
+                        >
                         {toast.type === 'success' && (
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M20 6L9 17l-5-5" />
@@ -52,7 +54,8 @@ export function ToastProvider({ children }) {
                         <span>{toast.message}</span>
                     </div>
                 ))}
-            </div>
+                </div>
+            )}
             <style>{`
                 @keyframes slideInRight {
                     from { transform: translateX(100%); opacity: 0; }

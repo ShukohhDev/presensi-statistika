@@ -115,7 +115,7 @@ export function Sidebar({ isOpen, onClose }) {
                         onClick={onClose}
                     >
                         <UploadIcon size={18} />
-                        <span>Pengumpulan Tugas</span>
+                        <span>{user?.role === 'admin' ? 'Kelola Tugas' : 'Pengumpulan Tugas'}</span>
                     </NavLink>
 
                     {user?.role !== 'admin' && (

@@ -37,7 +37,7 @@ export function Tasks() {
     const [myTasks, setMyTasks] = useState([]);
     const [allTasks, setAllTasks] = useState([]);
     const [assignments, setAssignments] = useState([]);
-    const [activeTab, setActiveTab] = useState('upload'); // 'upload', 'history', 'slots', 'all'
+    const [activeTab, setActiveTab] = useState(() => (user?.role === 'admin' ? 'slots' : 'upload')); // 'upload', 'history' (mahasiswa) | 'slots', 'all' (admin)
     const [loading, setLoading] = useState(true);
 
     // Slot creation states (Admin)
@@ -81,7 +81,7 @@ export function Tasks() {
         try {
             setLoading(true);
             const [myData, assignmentsData] = await Promise.all([
-                api.getTaskHistory().catch(() => ({ tasks: [] })),
+                user?.role === 'admin' ? Promise.resolve({ tasks: [] }) : api.getTaskHistory().catch(() => ({ tasks: [] })),
                 api.getAssignments().catch(() => ({ assignments: [] }))
             ]);
 
@@ -102,6 +102,18 @@ export function Tasks() {
     useEffect(() => {
         loadTaskData();
     }, [loadTaskData]);
+
+    useEffect(() => {
+        if (user?.role === 'admin') {
+            if (activeTab === 'upload' || activeTab === 'history') {
+                setActiveTab('slots');
+            }
+        } else {
+            if (activeTab === 'slots' || activeTab === 'all') {
+                setActiveTab('upload');
+            }
+        }
+    }, [user?.role, activeTab]);
 
     const handleAssignmentSelect = (id) => {
         setSelectedAssignmentId(id);
@@ -288,8 +300,14 @@ export function Tasks() {
     return (
         <div>
             <div className="page-header">
-                <h1 className="page-title">Pengumpulan Tugas</h1>
-                <p className="page-subtitle">Portal pengumpulan tugas dan berkas perkuliahan Statistika - Kelas TI25C</p>
+                <h1 className="page-title">
+                    {user?.role === 'admin' ? 'Pengelolaan Tugas Mahasiswa' : 'Pengumpulan Tugas'}
+                </h1>
+                <p className="page-subtitle">
+                    {user?.role === 'admin'
+                        ? 'Panel pengelolaan slot penugasan dan rekapitulasi berkas tugas mahasiswa - Kelas TI25C'
+                        : 'Portal pengumpulan tugas dan berkas perkuliahan Statistika - Kelas TI25C'}
+                </p>
             </div>
 
             {/* Banner Google Drive Terintegrasi */}
@@ -340,20 +358,24 @@ export function Tasks() {
 
             {/* Navigasi Tab */}
             <div className="tabs">
-                <button
-                    type="button"
-                    className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('upload')}
-                >
-                    Unggah Tugas Baru
-                </button>
-                <button
-                    type="button"
-                    className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('history')}
-                >
-                    Riwayat Tugas Saya ({myTasks.length})
-                </button>
+                {user?.role !== 'admin' && (
+                    <>
+                        <button
+                            type="button"
+                            className={`tab ${activeTab === 'upload' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('upload')}
+                        >
+                            Unggah Tugas Baru
+                        </button>
+                        <button
+                            type="button"
+                            className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('history')}
+                        >
+                            Riwayat Tugas Saya ({myTasks.length})
+                        </button>
+                    </>
+                )}
                 {user?.role === 'admin' && (
                     <>
                         <button
@@ -374,8 +396,8 @@ export function Tasks() {
                 )}
             </div>
 
-            {/* Tab 1: Form Upload Tugas */}
-            {activeTab === 'upload' && (
+            {/* Tab 1: Form Upload Tugas (Hanya Mahasiswa) */}
+            {user?.role !== 'admin' && activeTab === 'upload' && (
                 <div className="card" style={{ maxWidth: '680px', margin: '0 auto' }}>
                     <div className="card-header">
                         <h2 className="card-title">Form Pengumpulan Tugas</h2>
@@ -564,8 +586,8 @@ export function Tasks() {
                 </div>
             )}
 
-            {/* Tab 2: Riwayat Tugas Saya */}
-            {activeTab === 'history' && (
+            {/* Tab 2: Riwayat Tugas Saya (Hanya Mahasiswa) */}
+            {user?.role !== 'admin' && activeTab === 'history' && (
                 <div className="card">
                     <div className="card-header">
                         <h2 className="card-title">Daftar Berkas yang Dikumpulkan</h2>
