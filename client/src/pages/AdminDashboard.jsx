@@ -437,9 +437,18 @@ Shukoh#Dev (PJ MK Statistika Kelas TI25C)`;
                         type="button"
                         className="btn btn-primary btn-sm"
                         onClick={handleExportExcel}
-                        title="Unduh Rekap Format Excel"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            backgroundColor: '#10B981',
+                            borderColor: '#10B981',
+                            color: '#ffffff',
+                            fontWeight: 600
+                        }}
+                        title="Ekspor Rekap Kehadiran Format Excel Resmi untuk Dosen"
                     >
-                        <DownloadIcon size={16} /> Unduh Excel (.xlsx)
+                        <DownloadIcon size={16} /> Ekspor Excel (.xlsx)
                     </button>
                 </div>
             </div>

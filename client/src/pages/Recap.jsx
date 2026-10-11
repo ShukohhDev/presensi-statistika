@@ -8,7 +8,9 @@ import {
     BarChartIcon,
     RefreshIcon,
     AlertCircleIcon,
-    CheckCircleIcon
+    CheckCircleIcon,
+    WhatsAppIcon,
+    FileTextIcon
 } from '../components/Common/Icons';
 
 export function Recap() {
@@ -20,6 +22,9 @@ export function Recap() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'aman', 'waspada', 'kritis'
     const [viewMode, setViewMode] = useState('summary'); // 'summary' or 'matrix'
+    const [exportingExcel, setExportingExcel] = useState(false);
+    const [exportingCSV, setExportingCSV] = useState(false);
+    const [copyingWA, setCopyingWA] = useState(false);
 
     const loadRecap = useCallback(async () => {
         try {
@@ -41,21 +46,59 @@ export function Recap() {
 
     const handleExportExcel = async () => {
         try {
-            addToast('Mengunduh rekap Excel...', 'info');
+            setExportingExcel(true);
+            addToast('Menyiapkan file Excel rekap kehadiran resmi...', 'info');
             await api.exportExcel();
-            addToast('Unduhan Excel berhasil.', 'success');
+            addToast('Berkas Excel berhasil diunduh. Siap dikirim ke dosen pengampu.', 'success');
         } catch (err) {
-            addToast(err.message || 'Gagal mengunduh Excel.', 'error');
+            addToast(err.message || 'Gagal mengunduh file Excel.', 'error');
+        } finally {
+            setExportingExcel(false);
         }
     };
 
     const handleExportCSV = async () => {
         try {
-            addToast('Mengunduh rekap CSV...', 'info');
+            setExportingCSV(true);
+            addToast('Menyiapkan berkas CSV...', 'info');
             await api.exportCSV();
-            addToast('Unduhan CSV berhasil.', 'success');
+            addToast('Berkas CSV berhasil diunduh.', 'success');
         } catch (err) {
-            addToast(err.message || 'Gagal mengunduh CSV.', 'error');
+            addToast(err.message || 'Gagal mengunduh berkas CSV.', 'error');
+        } finally {
+            setExportingCSV(false);
+        }
+    };
+
+    const handleCopyClassWASummary = async () => {
+        try {
+            setCopyingWA(true);
+            const lines = [
+                `*REKAPITULASI KEHADIRAN KELAS TI25C*`,
+                `*Mata Kuliah:* Statistika dan Probabilitas`,
+                `*Total Sesi Pertemuan:* ${sessions.length} Pertemuan`,
+                `*Rata-rata Kehadiran Kelas:* ${averagePercentage}%`,
+                `*Lolos Syarat UAS (>= 40%):* ${totalAman + totalWaspada} Mahasiswa`,
+                `*Kritis (< 40%):* ${totalKritis} Mahasiswa`,
+                ``,
+                `*Daftar Status Kehadiran Mahasiswa:*`
+            ];
+
+            recapData.forEach((s, idx) => {
+                const uas = getUASStatus(s.percentage || 0);
+                const mark = uas.type === 'kritis' ? '[KRITIS]' : (uas.type === 'waspada' ? '[WASPADA]' : '[AMAN]');
+                lines.push(`${idx + 1}. ${s.name}: ${s.percentage}% (${s.counts?.hadir || 0}H, ${s.counts?.izin || 0}I, ${s.counts?.sakit || 0}S, ${s.counts?.alpha || 0}A) ${mark}`);
+            });
+
+            lines.push(``);
+            lines.push(`_Diekspor otomatis dari Sistem Presensi Statistika TI25C - PJ MK_`);
+
+            await navigator.clipboard.writeText(lines.join('\n'));
+            addToast('Format rekap WhatsApp berhasil disalin ke clipboard! Siap dikirim ke dosen.', 'success');
+        } catch (err) {
+            addToast('Gagal menyalin format pesan WhatsApp.', 'error');
+        } finally {
+            setCopyingWA(false);
         }
     };
 
@@ -150,24 +193,112 @@ export function Recap() {
                 </div>
 
                 {isAdmin && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            onClick={handleExportCSV}
-                        >
-                            <DownloadIcon size={16} /> Unduh CSV
-                        </button>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button
                             type="button"
                             className="btn btn-primary btn-sm"
                             onClick={handleExportExcel}
+                            disabled={exportingExcel}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                backgroundColor: '#10B981',
+                                borderColor: '#10B981',
+                                color: '#ffffff',
+                                fontWeight: 600
+                            }}
+                            title="Unduh format Excel resmi untuk dikirim ke Dosen Pengampu"
                         >
-                            <DownloadIcon size={16} /> Unduh Excel (.xlsx)
+                            <DownloadIcon size={16} />
+                            <span>{exportingExcel ? 'Menyiapkan...' : 'Ekspor Excel (.xlsx)'}</span>
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={handleExportCSV}
+                            disabled={exportingCSV}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            title="Unduh berkas CSV"
+                        >
+                            <DownloadIcon size={16} />
+                            <span>{exportingCSV ? 'Mengunduh...' : 'Unduh CSV'}</span>
                         </button>
                     </div>
                 )}
             </div>
+
+            {/* Banner Aksi Ekspor untuk Dosen Pengampu (Khusus Admin) */}
+            {isAdmin && (
+                <div className="card" style={{
+                    background: 'var(--color-bg-hover)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '18px 20px',
+                    marginBottom: '20px'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                        <div style={{ flex: '1 1 300px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                <span className="badge-status badge-hadir" style={{ fontSize: '0.75rem', fontWeight: 700, padding: '3px 8px' }}>
+                                    Dokumen Akademik Resmi Dosen
+                                </span>
+                                <span style={{ fontSize: '0.813rem', color: 'var(--color-text-muted)' }}>
+                                    Statistika & Probabilitas - TI25C
+                                </span>
+                            </div>
+                            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--color-text)' }}>
+                                Ekspor Rekapitulasi Kehadiran Mahasiswa
+                            </h3>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.813rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                                Berkas Excel (.xlsx) diformat khusus untuk diserahkan ke Dosen Pengampu, mencakup kop akademik resmi, data pertemuan P1 s/d P{sessions.length || 'n'}, total H/I/S/A, persentase kehadiran, dan status syarat kelayakan UAS (&gt;= 40%).
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={handleExportExcel}
+                                disabled={exportingExcel}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '10px 18px',
+                                    fontWeight: 600,
+                                    backgroundColor: '#10B981',
+                                    borderColor: '#10B981',
+                                    color: '#ffffff'
+                                }}
+                            >
+                                <DownloadIcon size={18} />
+                                <span>{exportingExcel ? 'Menyiapkan Excel...' : 'Ekspor ke Excel (.xlsx)'}</span>
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={handleExportCSV}
+                                disabled={exportingCSV}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 16px' }}
+                            >
+                                <DownloadIcon size={16} />
+                                <span>Unduh CSV</span>
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={handleCopyClassWASummary}
+                                disabled={copyingWA}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 14px' }}
+                                title="Salin ringkasan kehadiran seluruh mahasiswa untuk dikirim ke WhatsApp dosen"
+                            >
+                                <WhatsAppIcon size={16} />
+                                <span>{copyingWA ? 'Menyalin...' : 'Salin Format WA Dosen'}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Ringkasan Statistik */}
             {isAdmin ? (
@@ -344,6 +475,19 @@ export function Recap() {
                             </button>
                         </div>
 
+                        {isAdmin && (
+                            <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={handleExportExcel}
+                                disabled={exportingExcel}
+                                title="Ekspor rekapitulasi ke Excel (.xlsx)"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            >
+                                <DownloadIcon size={14} />
+                                <span>{exportingExcel ? 'Menyiapkan...' : 'Ekspor Excel'}</span>
+                            </button>
+                        )}
                         <button
                             type="button"
                             className="btn btn-ghost btn-sm"

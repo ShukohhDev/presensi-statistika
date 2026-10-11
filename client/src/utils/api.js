@@ -103,28 +103,50 @@ export const api = {
             body: JSON.stringify(data),
         }),
     exportExcel: async () => {
-        const response = await request('/api/admin/export/excel');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'rekap_kehadiran_statistika_TI25C.xlsx';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        try {
+            const response = await request('/api/admin/export/excel');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'rekap_kehadiran_statistika_TI25C.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 150);
+        } catch (err) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.href = `${API_URL}/api/admin/export/excel?token=${encodeURIComponent(token)}`;
+                return;
+            }
+            throw err;
+        }
     },
     exportCSV: async () => {
-        const response = await request('/api/admin/export/csv');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'rekap_kehadiran_statistika_TI25C.csv';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        try {
+            const response = await request('/api/admin/export/csv');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'rekap_kehadiran_statistika_TI25C.csv';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 150);
+        } catch (err) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.href = `${API_URL}/api/admin/export/csv?token=${encodeURIComponent(token)}`;
+                return;
+            }
+            throw err;
+        }
     },
 
     // Tasks & Assignments
