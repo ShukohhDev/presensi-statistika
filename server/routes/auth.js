@@ -1,11 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const { rateLimit } = require('express-rate-limit');
 const router = express.Router();
 const { getDb } = require('../config/database');
 const { authenticateToken, generateToken } = require('../middleware/auth');
 
+// Proteksi brute force login: maksimal 10 percobaan per 15 menit per IP
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Terlalu banyak percobaan login. Mohon tunggu 15 menit sebelum mencoba kembali.' }
+});
+
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', loginLimiter, (req, res) => {
     try {
         const { name, password } = req.body;
 

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -8,8 +9,18 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const initDb = require('./database/init');
 initDb();
 
+// Mulai background scheduler presensi & kalender otomatis
+const { startScheduler } = require('./services/scheduler');
+startScheduler();
+
 const app = express();
 const PORT = process.env.PORT || 7860;
+
+// Security Headers (CSP disesuaikan agar font Google & aset statis berjalan mulus)
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
 
 // Middleware
 app.use(cors({

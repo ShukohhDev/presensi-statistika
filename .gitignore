@@ -15,9 +15,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Database WAL files and temporary sqlite artifacts
+# Database SQLite files and temporary artifacts
+server/data/*.db
 server/data/*.db-shm
 server/data/*.db-wal
+server/data/*.db-journal
 
 # Editor & OS files
 .vscode/

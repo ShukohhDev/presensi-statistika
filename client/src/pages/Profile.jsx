@@ -14,7 +14,8 @@ import {
     FileTextIcon,
     DownloadIcon,
     AlertCircleIcon,
-    XIcon
+    XIcon,
+    WhatsAppIcon
 } from '../components/Common/Icons';
 
 export function Profile() {
@@ -32,19 +33,18 @@ export function Profile() {
     const [showPrintModal, setShowPrintModal] = useState(false);
 
     const loadSummary = useCallback(async () => {
-        if (user?.role === 'admin') {
-            setLoadingSummary(false);
-            return;
-        }
         try {
             setLoadingSummary(true);
-            const [dataSummary, dataCourse] = await Promise.all([
-                api.getAttendanceSummary().catch(() => ({ summary: null })),
-                api.getCourseInfo().catch(() => ({ info: null }))
-            ]);
-            setSummary(dataSummary?.summary || null);
+            const promises = [api.getCourseInfo().catch(() => ({ info: null }))];
+            if (user?.role !== 'admin') {
+                promises.push(api.getAttendanceSummary().catch(() => ({ summary: null })));
+            }
+            const [dataCourse, dataSummary] = await Promise.all(promises);
             if (dataCourse?.info) {
                 setCourseInfo(dataCourse.info);
+            }
+            if (dataSummary?.summary) {
+                setSummary(dataSummary.summary);
             }
         } catch (err) {
             console.error('Error loading attendance summary:', err);
@@ -569,8 +569,25 @@ export function Profile() {
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Dosen Pengampu</td>
                                         <td>:</td>
-                                        <td>{courseInfo?.lecturer_name || 'Dr. Hendra Wijaya, M.Si.'}</td>
+                                        <td>{courseInfo?.lecturer_name || 'RIFQI HIDAYAT'}{courseInfo?.lecturer_nip ? ` (NIDN: ${courseInfo.lecturer_nip})` : ''}</td>
                                     </tr>
+                                    {(courseInfo?.lecturer_phone || '081282394648') && (
+                                        <tr>
+                                            <td style={{ padding: '3px 0', fontWeight: 600 }}>Kontak Dosen</td>
+                                            <td>:</td>
+                                            <td>
+                                                <a
+                                                    href={`https://wa.me/${(courseInfo?.lecturer_phone || '081282394648').trim().replace(/[^0-9]/g, '').replace(/^0/, '62')}?text=${encodeURIComponent('Halo Pak Rifqi Hidayat, mohon maaf mengganggu waktunya. Saya mahasiswa kelas TI25C...')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    style={{ color: '#25D366', display: 'inline-flex', alignItems: 'center', gap: '5px', textDecoration: 'none', fontWeight: 600 }}
+                                                >
+                                                    <WhatsAppIcon size={14} />
+                                                    <span>{courseInfo?.lecturer_phone || '081282394648'}</span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    )}
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Hari & Jam Kuliah</td>
                                         <td>:</td>

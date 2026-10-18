@@ -94,6 +94,73 @@ export function Attendance() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const getScheduleStatus = () => {
+        const now = new Date();
+        const dayFormatter = new Intl.DateTimeFormat('id-ID', {
+            timeZone: 'Asia/Jakarta',
+            weekday: 'long'
+        });
+        const todayName = dayFormatter.format(now);
+        const scheduledDay = courseInfo?.schedule_day || 'Kamis';
+        const isScheduledDay = todayName.toLowerCase() === scheduledDay.toLowerCase();
+
+        const timeFormatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Jakarta',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+        const timeParts = timeFormatter.format(now).split(':').map(Number);
+        const currentMins = timeParts[0] * 60 + timeParts[1];
+
+        const openTime = courseInfo?.auto_open_time || '13:00';
+        const closeTime = courseInfo?.auto_close_time || '15:30';
+        const [openH, openM] = openTime.split(':').map(Number);
+        const [closeH, closeM] = closeTime.split(':').map(Number);
+        const openMins = openH * 60 + openM;
+        const closeMins = closeH * 60 + closeM;
+
+        if (courseInfo?.skip_next_session) {
+            return {
+                type: 'libur',
+                title: 'Perkuliahan Pekan Ini Diliburkan',
+                desc: 'Berdasarkan instruksi PJ MK / Dosen Pengampu, sesi perkuliahan tatap muka hari ini ditiadakan/diliburkan.'
+            };
+        }
+
+        if (isScheduledDay) {
+            if (currentMins < openMins) {
+                const diff = openMins - currentMins;
+                const hours = Math.floor(diff / 60);
+                const mins = diff % 60;
+                return {
+                    type: 'upcoming_today',
+                    title: `Sesi Presensi Dibuka Otomatis Pukul ${openTime} WIB`,
+                    countdownText: hours > 0 ? `${hours} jam ${mins} menit lagi` : `${mins} menit lagi`,
+                    desc: `Hari ini jadwal perkuliahan Statistika tatap muka (${openTime} - ${closeTime} WIB). Presensi akan aktif secara otomatis.`
+                };
+            } else if (currentMins >= closeMins) {
+                return {
+                    type: 'ended_today',
+                    title: 'Perkuliahan Hari Ini Telah Selesai',
+                    desc: `Sesi presensi dan perkuliahan telah ditutup pada pukul ${closeTime} WIB.`
+                };
+            } else {
+                return {
+                    type: 'waiting_open',
+                    title: 'Menunggu Pembukaan Sesi Presensi',
+                    desc: 'Sesi presensi sedang disiapkan oleh sistem atau PJ MK. Halaman ini akan memuat sesi secara otomatis.'
+                };
+            }
+        }
+
+        return {
+            type: 'other_day',
+            title: 'Sesi Presensi Belum Dibuka',
+            desc: `Jadwal perkuliahan Statistika berikutnya adalah hari ${scheduledDay}, pukul ${courseInfo?.schedule_time || '13:00 - 15:30 WIB'}.`
+        };
+    };
+
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -221,16 +288,46 @@ export function Attendance() {
                 </div>
 
                 <div className="course-meta-grid">
-                    <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                        <div style={{ fontSize: '0.688rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Dosen Pengampu
+                    <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div>
+                            <div style={{ fontSize: '0.688rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Dosen Pengampu
+                            </div>
+                            <div style={{ fontWeight: 600, color: 'var(--color-text)', marginTop: '4px' }}>
+                                {courseInfo?.lecturer_name || 'RIFQI HIDAYAT'}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                                NIP / NIDN: {courseInfo?.lecturer_nip || '0401088701'}
+                            </div>
                         </div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-text)', marginTop: '4px' }}>
-                            {courseInfo?.lecturer_name || 'Dosen Pengampu Statistika'}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            NIP: {courseInfo?.lecturer_nip || '-'}
-                        </div>
+                        {(courseInfo?.lecturer_phone || '081282394648') && (
+                            <div style={{ marginTop: '10px' }}>
+                                <a
+                                    href={`https://wa.me/${(courseInfo?.lecturer_phone || '081282394648').trim().replace(/[^0-9]/g, '').replace(/^0/, '62')}?text=${encodeURIComponent('Halo Pak Rifqi Hidayat, mohon maaf mengganggu waktunya. Saya mahasiswa kelas TI25C...')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-secondary btn-xs"
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontSize: '0.75rem',
+                                        color: '#25D366',
+                                        borderColor: 'rgba(37, 211, 102, 0.3)',
+                                        backgroundColor: 'rgba(37, 211, 102, 0.08)',
+                                        padding: '4px 10px',
+                                        borderRadius: 'var(--radius-sm)',
+                                        textDecoration: 'none',
+                                        fontWeight: 600
+                                    }}
+                                    title="Hubungi Dosen Pengampu via WhatsApp (081282394648)"
+                                >
+                                    <WhatsAppIcon size={14} />
+                                    <span>Hubungi Dosen</span>
+                                    <ExternalLinkIcon size={12} />
+                                </a>
+                            </div>
+                        )}
                     </div>
 
                     <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
@@ -560,15 +657,44 @@ export function Attendance() {
                                 </form>
                             </div>
                         ) : (
-                            /* Sesi Sedang Ditutup */
-                            <div className="empty-state" style={{ padding: '36px 16px' }}>
-                                <AlertCircleIcon size={44} />
-                                <h3>Sesi Presensi Belum Dibuka</h3>
-                                <p>PJ Mata Kuliah (Admin) belum membuka sesi presensi untuk perkuliahan saat ini.</p>
-                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '8px' }}>
-                                    Halaman ini akan diperbarui secara berkala saat sesi dibuka.
-                                </p>
-                            </div>
+                            /* Sesi Sedang Ditutup / Menunggu Jadwal */
+                            (() => {
+                                const sched = getScheduleStatus();
+                                return (
+                                    <div className="empty-state" style={{ padding: '36px 16px' }}>
+                                        {sched.type === 'upcoming_today' ? (
+                                            <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+                                                <div style={{ width: '56px', height: '56px', margin: '0 auto 16px', borderRadius: '50%', backgroundColor: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary)' }}>
+                                                    <ClockIcon size={28} />
+                                                </div>
+                                                <span className="badge-status badge-active-session" style={{ fontSize: '0.75rem', padding: '3px 10px', marginBottom: '10px' }}>
+                                                    Hari Ini: Kuliah Statistika
+                                                </span>
+                                                <h3 style={{ fontSize: '1.25rem', marginTop: '6px' }}>{sched.title}</h3>
+                                                {sched.countdownText && (
+                                                    <div style={{ margin: '14px 0', padding: '10px 16px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: 'var(--color-primary)' }}>
+                                                        <ClockIcon size={16} />
+                                                        <span>Dimulai dalam: {sched.countdownText}</span>
+                                                    </div>
+                                                )}
+                                                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>{sched.desc}</p>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '12px' }}>
+                                                    Halaman ini otomatis merefresh saat waktu tiba.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <AlertCircleIcon size={44} />
+                                                <h3>{sched.title}</h3>
+                                                <p>{sched.desc}</p>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '8px' }}>
+                                                    Halaman ini akan diperbarui secara berkala saat sesi dibuka.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()
                         )}
                     </div>
                 )}

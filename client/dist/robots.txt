@@ -1,0 +1,13 @@
+# Robots.txt for Presensi MK Statistika TI25C
+# Portal Perkuliahan & Presensi Internal Mahasiswa
+User-agent: *
+Disallow: /api/
+Disallow: /uploads/
+Disallow: /admin
+Disallow: /presensi
+Disallow: /rekap
+Disallow: /tugas
+Disallow: /laporan
+Disallow: /kalender
+Disallow: /materi
+Disallow: /profil

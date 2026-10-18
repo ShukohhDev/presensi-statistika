@@ -15,6 +15,7 @@ import { Profile } from './pages/Profile';
 import { Reports } from './pages/Reports';
 import { Calendar } from './pages/Calendar';
 import { Materials } from './pages/Materials';
+import { NotFound } from './pages/NotFound';
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -128,8 +129,8 @@ function App() {
                                 <Route path="materi" element={<Materials />} />
                             </Route>
 
-                            {/* Catch-all route */}
-                            <Route path="*" element={<HomeRedirect />} />
+                            {/* Catch-all 404 route */}
+                            <Route path="*" element={<NotFound />} />
                         </Routes>
                     </BrowserRouter>
                 </ToastProvider>

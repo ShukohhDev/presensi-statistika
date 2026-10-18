@@ -3,6 +3,7 @@ const router = express.Router();
 const { getDb } = require('../config/database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const XLSX = require('xlsx');
+const { getSchedulerStatus, checkSchedulerTick } = require('../services/scheduler');
 
 // POST /api/admin/session/open - Buka sesi presensi
 router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
@@ -458,26 +459,118 @@ router.get('/course-info', authenticateToken, (req, res) => {
 // PUT /api/admin/course-info - Update info mata kuliah (admin only)
 router.put('/course-info', authenticateToken, requireAdmin, (req, res) => {
     try {
-        const { lecturer_name, lecturer_nip, schedule_day, schedule_time, room, whatsapp_group_link, pj_whatsapp_phone } = req.body;
+        const {
+            lecturer_name,
+            lecturer_nip,
+            lecturer_phone,
+            lecturer_email,
+            schedule_day,
+            schedule_time,
+            room,
+            whatsapp_group_link,
+            pj_whatsapp_phone,
+            auto_session_enabled,
+            auto_open_time,
+            auto_close_time,
+            skip_next_session,
+            tolerance_minutes
+        } = req.body;
         const db = getDb();
 
         db.prepare(`
             UPDATE course_info 
             SET lecturer_name = COALESCE(?, lecturer_name),
                 lecturer_nip = COALESCE(?, lecturer_nip),
+                lecturer_phone = COALESCE(?, lecturer_phone),
+                lecturer_email = COALESCE(?, lecturer_email),
                 schedule_day = COALESCE(?, schedule_day),
                 schedule_time = COALESCE(?, schedule_time),
                 room = COALESCE(?, room),
                 whatsapp_group_link = COALESCE(?, whatsapp_group_link),
                 pj_whatsapp_phone = COALESCE(?, pj_whatsapp_phone),
+                auto_session_enabled = COALESCE(?, auto_session_enabled),
+                auto_open_time = COALESCE(?, auto_open_time),
+                auto_close_time = COALESCE(?, auto_close_time),
+                skip_next_session = COALESCE(?, skip_next_session),
+                tolerance_minutes = COALESCE(?, tolerance_minutes),
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = 1
-        `).run(lecturer_name, lecturer_nip, schedule_day, schedule_time, room, whatsapp_group_link, pj_whatsapp_phone);
+        `).run(
+            lecturer_name,
+            lecturer_nip,
+            lecturer_phone,
+            lecturer_email,
+            schedule_day,
+            schedule_time,
+            room,
+            whatsapp_group_link,
+            pj_whatsapp_phone,
+            auto_session_enabled !== undefined ? (auto_session_enabled ? 1 : 0) : null,
+            auto_open_time,
+            auto_close_time,
+            skip_next_session !== undefined ? (skip_next_session ? 1 : 0) : null,
+            tolerance_minutes !== undefined ? parseInt(tolerance_minutes, 10) : null
+        );
 
-        res.json({ message: 'Informasi mata kuliah berhasil diperbarui.' });
+        res.json({ message: 'Informasi mata kuliah dan otomasi berhasil diperbarui.' });
     } catch (err) {
         console.error('Update course info error:', err);
         res.status(500).json({ error: 'Terjadi kesalahan server.' });
+    }
+});
+
+// GET /api/admin/auto-session/status - Status otomasi presensi
+router.get('/auto-session/status', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const status = getSchedulerStatus();
+        res.json(status);
+    } catch (err) {
+        console.error('Get auto-session status error:', err);
+        res.status(500).json({ error: 'Gagal mengambil status otomasi presensi.' });
+    }
+});
+
+// POST /api/admin/auto-session/toggle - Toggle On/Off Otomasi Presensi (Khusus Shukoh#Dev)
+router.post('/auto-session/toggle', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const db = getDb();
+        const current = db.prepare('SELECT auto_session_enabled FROM course_info WHERE id = 1').get();
+        const newStatus = current?.auto_session_enabled ? 0 : 1;
+
+        db.prepare('UPDATE course_info SET auto_session_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1').run(newStatus);
+
+        db.prepare('INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)')
+            .run(req.user.id, 'toggle_otomasi', `Mengubah status otomasi presensi menjadi: ${newStatus ? 'AKTIF (ON)' : 'NONAKTIF (OFF)'}`);
+
+        res.json({
+            message: `Otomasi presensi berhasil di${newStatus ? 'aktifkan' : 'nonaktifkan'}.`,
+            auto_session_enabled: newStatus
+        });
+    } catch (err) {
+        console.error('Toggle auto-session error:', err);
+        res.status(500).json({ error: 'Gagal mengubah status otomasi presensi.' });
+    }
+});
+
+// POST /api/admin/auto-session/skip-week - Toggle Liburkan / Lewati Pekan Ini (Safe-guard tanggal merah)
+router.post('/auto-session/skip-week', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const db = getDb();
+        const current = db.prepare('SELECT skip_next_session FROM course_info WHERE id = 1').get();
+        const newSkip = current?.skip_next_session ? 0 : 1;
+
+        db.prepare('UPDATE course_info SET skip_next_session = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1').run(newSkip);
+
+        db.prepare('INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)')
+            .run(req.user.id, 'skip_pekan', newSkip ? 'Menyetel perkuliahan pekan ini DILIBURKAN' : 'Membatalkan status libur perkuliahan pekan ini');
+
+        res.json({
+            message: newSkip ? 'Perkuliahan pekan ini ditandai LIBUR. Sistem tidak akan membuka sesi otomatis.' : 'Status libur dibatalkan. Sesi akan berjalan normal.',
+            skip_next_session: newSkip
+        });
+    } catch (err) {
+        console.error('Skip week error:', err);
+        res.status(500).json({ error: 'Gagal mengubah status pekan libur.' });
     }
 });
 

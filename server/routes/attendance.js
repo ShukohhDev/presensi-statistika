@@ -62,15 +62,36 @@ router.post('/submit', authenticateToken, uploadEvidence.single('evidence'), (re
         }
 
         const evidencePath = req.file ? `/uploads/evidence/${req.file.filename}` : null;
+        let finalNote = note ? note.trim() : null;
+
+        // Ide 4: Cek toleransi keterlambatan untuk kehadiran 'hadir'
+        if (status === 'hadir' && session.opened_at) {
+            const course = db.prepare('SELECT tolerance_minutes FROM course_info WHERE id = 1').get();
+            const tolerance = (course && course.tolerance_minutes !== undefined) ? course.tolerance_minutes : 30;
+            const openedTime = new Date(session.opened_at).getTime();
+            const nowTime = Date.now();
+            const elapsedMinutes = Math.floor((nowTime - openedTime) / (60 * 1000));
+
+            if (elapsedMinutes > tolerance) {
+                const wibTime = new Intl.DateTimeFormat('id-ID', {
+                    timeZone: 'Asia/Jakarta',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(new Date());
+                const lateTag = `[Terlambat ${elapsedMinutes - tolerance} mnt (Masuk ${wibTime} WIB)]`;
+                finalNote = finalNote ? `${finalNote} ${lateTag}` : lateTag;
+            }
+        }
 
         db.prepare(
             'INSERT INTO attendance (user_id, session_id, status, note, evidence_image) VALUES (?, ?, ?, ?, ?)'
-        ).run(req.user.id, session_id, status, note || null, evidencePath);
+        ).run(req.user.id, session_id, status, finalNote, evidencePath);
 
         // Log aktivitas
         db.prepare(
             'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
-        ).run(req.user.id, 'presensi', `Presensi pertemuan ${session.meeting_number}: ${status}`);
+        ).run(req.user.id, 'presensi', `Presensi pertemuan ${session.meeting_number}: ${status}${finalNote ? ` (${finalNote})` : ''}`);
 
         res.json({ message: 'Presensi berhasil dicatat.', status });
     } catch (err) {

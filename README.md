@@ -13,7 +13,7 @@ Tautan Resmi: [https://presensi-statistika-ti25c-production.up.railway.app](http
    - Dukungan status Hadir, Izin, Sakit, dan Alpha.
    - Unggah bukti foto surat dokter atau keterangan untuk status Izin dan Sakit.
 
-2. **Dashboard Khusus Admin (Shukoh#Dev)**
+2. **Dashboard Khusus Admin**
    - Pembukaan dan penutupan sesi presensi secara berkala.
    - Rekapitulasi matriks kehadiran seluruh mahasiswa dari pertemuan 1 hingga 16.
    - Fitur Simulator Kelayakan UAS: Kalkulasi otomatis syarat minimal kehadiran 40% (minimal 7 dari 16 pertemuan) untuk menentukan kelayakan mahasiswa mengikuti Ujian Akhir Semester.
@@ -51,5 +51,3 @@ Tautan Resmi: [https://presensi-statistika-ti25c-production.up.railway.app](http
 - **Akun Mahasiswa**:
   - Username: Nama lengkap mahasiswa (sesuai daftar kelas)
   - Password: NIM masing-masing mahasiswa
-- **Akun Admin**:
-  - Username: Shukoh#Dev

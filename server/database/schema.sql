@@ -148,12 +148,20 @@ CREATE TABLE IF NOT EXISTS assignments (
 -- Tabel Course Info (Informasi Dosen, Jadwal & Ruangan)
 CREATE TABLE IF NOT EXISTS course_info (
     id INTEGER PRIMARY KEY,
-    lecturer_name TEXT DEFAULT 'Dosen Pengampu Statistika',
-    lecturer_nip TEXT DEFAULT '-',
+    lecturer_name TEXT DEFAULT 'RIFQI HIDAYAT',
+    lecturer_nip TEXT DEFAULT '0401088701',
+    lecturer_phone TEXT DEFAULT '081282394648',
+    lecturer_email TEXT DEFAULT '',
     schedule_day TEXT DEFAULT 'Kamis',
-    schedule_time TEXT DEFAULT '08:00 - 09:40 WIB',
+    schedule_time TEXT DEFAULT '13:00 - 15:30 WIB',
     room TEXT DEFAULT 'Ruang Teori Gedung Kuliah',
     whatsapp_group_link TEXT DEFAULT 'https://chat.whatsapp.com/sample-statistika-ti25c',
+    pj_whatsapp_phone TEXT DEFAULT '',
+    auto_session_enabled INTEGER DEFAULT 1,
+    auto_open_time TEXT DEFAULT '13:00',
+    auto_close_time TEXT DEFAULT '15:30',
+    skip_next_session INTEGER DEFAULT 0,
+    tolerance_minutes INTEGER DEFAULT 30,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

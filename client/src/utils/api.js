@@ -102,6 +102,16 @@ export const api = {
             method: 'PUT',
             body: JSON.stringify(data),
         }),
+    getAutoSessionStatus: () =>
+        request('/api/admin/auto-session/status'),
+    toggleAutoSession: () =>
+        request('/api/admin/auto-session/toggle', {
+            method: 'POST',
+        }),
+    toggleSkipWeek: () =>
+        request('/api/admin/auto-session/skip-week', {
+            method: 'POST',
+        }),
     exportExcel: async () => {
         try {
             const response = await request('/api/admin/export/excel');

@@ -14,7 +14,8 @@ import {
     WhatsAppIcon,
     FileTextIcon,
     SettingsIcon,
-    CalculatorIcon
+    CalculatorIcon,
+    CalendarIcon
 } from '../components/Common/Icons';
 
 export function AdminDashboard() {
@@ -63,8 +64,10 @@ export function AdminDashboard() {
     // Feature 4: Course Info & Lecturer Settings modal
     const [courseModalOpen, setCourseModalOpen] = useState(false);
     const [courseInfo, setCourseInfo] = useState({
-        lecturer_name: 'Dosen Pengampu Statistika',
-        lecturer_nip: '-',
+        lecturer_name: 'RIFQI HIDAYAT',
+        lecturer_nip: '0401088701',
+        lecturer_phone: '081282394648',
+        lecturer_email: '',
         schedule_day: 'Kamis',
         schedule_time: '08:00 - 09:40 WIB',
         room: 'Ruang Teori Gedung Kuliah',
@@ -78,6 +81,13 @@ export function AdminDashboard() {
     const [recapData, setRecapData] = useState([]);
     const [loadingRecap, setLoadingRecap] = useState(false);
     const [simStudentId, setSimStudentId] = useState('all');
+
+    // Otomasi Sesi Presensi Kamis & Ide Tambahan (Khusus Shukoh#Dev)
+    const [autoSessionEnabled, setAutoSessionEnabled] = useState(true);
+    const [skipNextSession, setSkipNextSession] = useState(false);
+    const [togglingAuto, setTogglingAuto] = useState(false);
+    const [togglingSkip, setTogglingSkip] = useState(false);
+    const [copyingMorningWA, setCopyingMorningWA] = useState(false);
 
     const { addToast } = useToast();
 
@@ -99,6 +109,8 @@ export function AdminDashboard() {
 
             if (courseData?.info) {
                 setCourseInfo(courseData.info);
+                setAutoSessionEnabled(Boolean(courseData.info.auto_session_enabled));
+                setSkipNextSession(Boolean(courseData.info.skip_next_session));
             }
 
             // If there's an active session, load its detailed attendance list
@@ -272,6 +284,65 @@ export function AdminDashboard() {
             addToast(err.message || 'Gagal memperbarui info perkuliahan.', 'error');
         } finally {
             setSavingCourse(false);
+        }
+    };
+
+    // Handler Toggle Otomasi Presensi (Khusus Shukoh#Dev)
+    const handleToggleAutoSession = async () => {
+        try {
+            setTogglingAuto(true);
+            const res = await api.toggleAutoSession();
+            const newState = Boolean(res.auto_session_enabled);
+            setAutoSessionEnabled(newState);
+            setCourseInfo(prev => ({ ...prev, auto_session_enabled: res.auto_session_enabled }));
+            addToast(res.message || `Otomasi presensi berhasil di${newState ? 'aktifkan' : 'nonaktifkan'}.`, 'success');
+        } catch (err) {
+            addToast(err.message || 'Gagal mengubah status otomasi presensi.', 'error');
+        } finally {
+            setTogglingAuto(false);
+        }
+    };
+
+    // Handler Toggle Liburkan / Lewati Pekan Ini (Ide 2)
+    const handleToggleSkipWeek = async () => {
+        try {
+            setTogglingSkip(true);
+            const res = await api.toggleSkipWeek();
+            const newSkip = Boolean(res.skip_next_session);
+            setSkipNextSession(newSkip);
+            setCourseInfo(prev => ({ ...prev, skip_next_session: res.skip_next_session }));
+            addToast(res.message || 'Status libur pekan ini berhasil diperbarui.', 'success');
+        } catch (err) {
+            addToast(err.message || 'Gagal mengubah status libur pekan ini.', 'error');
+        } finally {
+            setTogglingSkip(false);
+        }
+    };
+
+    // Handler Salin Format WA Pengingat Pagi untuk Grup Kelas (Ide 1)
+    const handleCopyWaMorningReminder = () => {
+        try {
+            setCopyingMorningWA(true);
+            const meetingNum = activeSession ? activeSession.meeting_number : (sessions.length + 1);
+            const text = `*PENGINGAT KULIAH & PRESENSI STATISTIKA TI25C* 📊\n\n` +
+                `Selamat pagi rekan-rekan mahasiswa TI25C! 👋\n` +
+                `Hari ini *${courseInfo.schedule_day || 'Kamis'}*, perkuliahan Statistika akan dilaksanakan dengan rincian sbb:\n\n` +
+                `👨‍🏫 *Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'}\n` +
+                `⏰ *Waktu:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
+                `🏛️ *Ruang:* ${courseInfo.room || 'Ruang Teori Gedung Kuliah'}\n` +
+                `📖 *Agenda:* Pertemuan ke-${meetingNum}\n\n` +
+                `⚠️ *Ketentuan Presensi Portal:*\n` +
+                `• Akses absensi dibuka otomatis tepat pukul *13:00 WIB* dan ditutup tepat pukul *15:30 WIB*.\n` +
+                `• Toleransi keterlambatan: *${courseInfo.tolerance_minutes || 30} menit* (Presensi setelah 13:30 WIB otomatis bertanda *Terlambat*).\n` +
+                `• Portal Presensi: ${window.location.origin}/attendance\n\n` +
+                `Dimohon untuk hadir tepat waktu di kelas dan mempersiapkan diri. Terima kasih.\n\n` +
+                `- *Shukoh#Dev* (PJ MK Statistika Kelas TI25C)`;
+
+            navigator.clipboard.writeText(text)
+                .then(() => addToast('Format WA Pengingat Pagi disalin ke clipboard! Siap dibagikan ke grup kelas.', 'success'))
+                .catch(() => addToast('Gagal menyalin format pesan WA.', 'error'));
+        } finally {
+            setCopyingMorningWA(false);
         }
     };
 
@@ -492,6 +563,151 @@ Shukoh#Dev (PJ MK Statistika Kelas TI25C)`;
                     <div className="stat-info">
                         <h3>{stats?.totalReports || 0}</h3>
                         <p>Laporan Baru Mahasiswa</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Panel Otomasi Jadwal Presensi & Kontrol Cerdas (Khusus Shukoh#Dev) */}
+            <div className="card" style={{ marginBottom: '24px', border: autoSessionEnabled ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '4px',
+                    background: autoSessionEnabled ? 'linear-gradient(90deg, #10B981, #059669)' : 'linear-gradient(90deg, #6B7280, #9CA3AF)'
+                }} />
+
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '10px',
+                            backgroundColor: autoSessionEnabled ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-hover)',
+                            color: autoSessionEnabled ? '#10B981' : 'var(--color-text-secondary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <CalendarIcon size={22} />
+                        </div>
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <h2 className="card-title" style={{ margin: 0 }}>Otomasi Presensi Hari Kamis</h2>
+                                <span className={`badge-status ${autoSessionEnabled ? 'badge-hadir' : 'badge-alpha'}`} style={{ fontSize: '0.75rem' }}>
+                                    {autoSessionEnabled ? 'Otomasi ON' : 'Otomasi OFF (Manual)'}
+                                </span>
+                                {skipNextSession && (
+                                    <span className="badge-status badge-izin" style={{ fontSize: '0.75rem', backgroundColor: '#FEF3C7', color: '#B45309' }}>
+                                        Pekan Ini Diliburkan
+                                    </span>
+                                )}
+                            </div>
+                            <p style={{ margin: '2px 0 0', fontSize: '0.813rem', color: 'var(--color-text-secondary)' }}>
+                                Jadwal Kuliah: <strong>Kamis, 13:00 - 15:30 WIB</strong> • Dosen: <strong>{courseInfo.lecturer_name || 'RIFQI HIDAYAT'}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Switch Toggle Otomasi */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '0.813rem', fontWeight: 600, color: 'var(--color-text)' }}>
+                                {autoSessionEnabled ? 'Jadwal Otomatis Aktif' : 'Mode Manual Saja'}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                                {autoSessionEnabled ? 'Buka 13:00 • Tutup 15:30 WIB' : 'Hanya dibuka lewat tombol admin'}
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={autoSessionEnabled}
+                            onClick={handleToggleAutoSession}
+                            disabled={togglingAuto}
+                            title={autoSessionEnabled ? "Klik untuk mematikan otomasi presensi (ganti ke manual)" : "Klik untuk menyalakan otomasi presensi Kamis"}
+                            style={{
+                                position: 'relative',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                width: '56px',
+                                height: '30px',
+                                borderRadius: '9999px',
+                                backgroundColor: autoSessionEnabled ? '#10B981' : '#6B7280',
+                                border: 'none',
+                                cursor: togglingAuto ? 'not-allowed' : 'pointer',
+                                transition: 'background-color 0.25s ease, box-shadow 0.25s ease',
+                                padding: '3px',
+                                outline: 'none',
+                                boxShadow: autoSessionEnabled ? '0 0 12px rgba(16, 185, 129, 0.4)' : 'none',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    display: 'block',
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    backgroundColor: '#ffffff',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                    transform: autoSessionEnabled ? 'translateX(26px)' : 'translateX(0px)',
+                                    transition: 'transform 0.25s ease',
+                                }}
+                            />
+                        </button>
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
+                    {/* Alur Kerja Otomatis */}
+                    <div style={{ backgroundColor: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', padding: '14px 16px' }}>
+                        <div style={{ fontSize: '0.813rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '8px' }}>
+                            Alur Siklus Otomatis (WIB):
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.813rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                            <li><strong>Kamis 00:00 WIB:</strong> Agenda perkuliahan otomatis dibuat di Kalender & notifikasi sistem terbit.</li>
+                            <li><strong>Kamis 13:00 WIB:</strong> Sesi presensi otomatis <strong>DIBUKA</strong> selama 150 menit.</li>
+                            <li><strong>Kamis 15:30 WIB:</strong> Sesi otomatis <strong>DITUTUP</strong> (Mahasiswa belum absen otomatis Alpha).</li>
+                            <li><strong>Toleransi Keterlambatan:</strong> {courseInfo.tolerance_minutes || 30} menit (Absen {'>'} 13:30 bertanda <em>[Terlambat]</em>).</li>
+                        </ul>
+                    </div>
+
+                    {/* Aksi Cepat Shukoh#Dev (Ide 1 & Ide 2) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            {/* Ide 1: Salin Format WA Pengingat Pagi */}
+                            <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={handleCopyWaMorningReminder}
+                                disabled={copyingMorningWA}
+                                style={{ flex: 1, borderColor: '#25D366', color: '#128C7E', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                title="Salin template broadcast WhatsApp untuk dikirim ke grup kelas jam 07:00 pagi"
+                            >
+                                <WhatsAppIcon size={16} />
+                                Salin WA Pengingat Pagi
+                            </button>
+
+                            {/* Ide 2: Liburkan Pekan Ini */}
+                            <button
+                                type="button"
+                                className={`btn btn-sm ${skipNextSession ? 'btn-danger' : 'btn-secondary'}`}
+                                onClick={handleToggleSkipWeek}
+                                disabled={togglingSkip}
+                                style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                title="Gunakan ini jika Kamis pekan ini tanggal merah atau dosen berhalangan hadir"
+                            >
+                                <ClockIcon size={16} />
+                                {skipNextSession ? 'Batalkan Libur Pekan Ini' : 'Liburkan Pekan Ini'}
+                            </button>
+                        </div>
+
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <CheckCircleIcon size={14} style={{ color: '#10B981', flexShrink: 0 }} />
+                            <span>Kontrol manual (Buka / Tutup Sesi sewaktu-waktu di panel bawah) tetap berfungsi penuh sebagai override.</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1044,6 +1260,32 @@ Shukoh#Dev (PJ MK Statistika Kelas TI25C)`;
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         <div className="form-group">
+                            <label className="form-label" htmlFor="lecturerPhone">Nomor WhatsApp Dosen</label>
+                            <input
+                                id="lecturerPhone"
+                                type="text"
+                                className="form-input"
+                                placeholder="Contoh: 08123456789 atau 628123456789"
+                                value={courseInfo.lecturer_phone || ''}
+                                onChange={(e) => setCourseInfo({ ...courseInfo, lecturer_phone: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="lecturerEmail">Email Dosen (Opsional)</label>
+                            <input
+                                id="lecturerEmail"
+                                type="email"
+                                className="form-input"
+                                placeholder="dosen@kampus.ac.id"
+                                value={courseInfo.lecturer_email || ''}
+                                onChange={(e) => setCourseInfo({ ...courseInfo, lecturer_email: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div className="form-group">
                             <label className="form-label" htmlFor="scheduleDay">Hari Perkuliahan</label>
                             <input
                                 id="scheduleDay"
@@ -1066,6 +1308,51 @@ Shukoh#Dev (PJ MK Statistika Kelas TI25C)`;
                                 required
                             />
                         </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="autoOpenTime">Jam Buka Otomatis</label>
+                            <input
+                                id="autoOpenTime"
+                                type="text"
+                                className="form-input"
+                                placeholder="13:00"
+                                value={courseInfo.auto_open_time || '13:00'}
+                                onChange={(e) => setCourseInfo({ ...courseInfo, auto_open_time: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="autoCloseTime">Jam Tutup Otomatis</label>
+                            <input
+                                id="autoCloseTime"
+                                type="text"
+                                className="form-input"
+                                placeholder="15:30"
+                                value={courseInfo.auto_close_time || '15:30'}
+                                onChange={(e) => setCourseInfo({ ...courseInfo, auto_close_time: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="toleranceMinutes">
+                            Toleransi Keterlambatan Kehadiran (Menit)
+                        </label>
+                        <input
+                            id="toleranceMinutes"
+                            type="number"
+                            min="0"
+                            max="120"
+                            className="form-input"
+                            placeholder="30"
+                            value={courseInfo.tolerance_minutes !== undefined ? courseInfo.tolerance_minutes : 30}
+                            onChange={(e) => setCourseInfo({ ...courseInfo, tolerance_minutes: parseInt(e.target.value, 10) || 0 })}
+                        />
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginTop: '4px' }}>
+                            Mahasiswa yang presensi setelah batas waktu toleransi (misal 13:30 WIB jika 30 menit) akan otomatis diberi label [Terlambat].
+                        </span>
                     </div>
 
                     <div className="form-group">
