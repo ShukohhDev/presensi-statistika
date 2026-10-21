@@ -348,7 +348,7 @@ export function Attendance() {
                             Ruang Kuliah
                         </div>
                         <div style={{ fontWeight: 600, color: 'var(--color-text)', marginTop: '4px' }}>
-                            {courseInfo?.room || 'Ruang Teori Gedung Kuliah'}
+                            {courseInfo?.room || 'G. Mahdor R. C 306'}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                             Perkuliahan Tatap Muka

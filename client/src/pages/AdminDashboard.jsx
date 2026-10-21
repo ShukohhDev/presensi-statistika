@@ -76,7 +76,7 @@ export function AdminDashboard() {
         auto_open_time: '13:00',
         auto_close_time: '15:45',
         tolerance_minutes: 30,
-        room: 'Ruang Teori Gedung Kuliah',
+        room: 'G. Mahdor R. C 306',
         whatsapp_group_link: 'https://chat.whatsapp.com/sample-statistika-ti25c',
         pj_whatsapp_phone: ''
     });
@@ -348,7 +348,7 @@ export function AdminDashboard() {
                 `Hari ini *${courseInfo.schedule_day || 'Kamis'}*, perkuliahan Statistika akan dilaksanakan dengan rincian sbb:\n\n` +
                 `*Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'}\n` +
                 `*Waktu Perkuliahan:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
-                `*Ruang:* ${courseInfo.room || 'Ruang Teori Gedung Kuliah'}\n` +
+                `*Ruang:* ${courseInfo.room || 'G. Mahdor R. C 306'}\n` +
                 `*Agenda:* Pertemuan ke-${meetingNum}\n\n` +
                 `*Ketentuan Presensi Portal:*\n` +
                 `• Akses absensi dibuka otomatis tepat pukul *13:00 WIB* (Waktu kuliah: 13:00 - 15:30 WIB).\n` +

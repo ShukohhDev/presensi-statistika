@@ -72,7 +72,7 @@ async function checkSchedulerTick() {
                     // Jika admin menyetel libur pekan ini
                     db.prepare(
                         `INSERT INTO calendar_events (title, description, event_date, event_time, event_type, location, room, building, created_by)
-                         VALUES (?, ?, ?, ?, 'kuliah', 'Ruang Teori Gedung Kuliah', 'Ruang Teori', 'Gedung Kuliah', 1)`
+                         VALUES (?, ?, ?, ?, 'kuliah', 'G. Mahdor R. C 306', 'R. C 306', 'G. Mahdor', 1)`
                     ).run(
                         'Perkuliahan Statistika TI25C (DILIBURKAN)',
                         'Perkuliahan Statistika tatap muka hari ini ditiadakan/diliburkan sesuai arahan PJ MK/Dosen.',
@@ -101,10 +101,10 @@ async function checkSchedulerTick() {
                     // Buat acara resmi di kalender
                     db.prepare(
                         `INSERT INTO calendar_events (title, description, event_date, event_time, event_type, location, room, building, created_by)
-                         VALUES (?, ?, ?, ?, 'kuliah', 'Ruang Teori Gedung Kuliah', 'Ruang Teori Gedung Kuliah', 'Gedung Kuliah', 1)`
+                         VALUES (?, ?, ?, ?, 'kuliah', 'G. Mahdor R. C 306', 'R. C 306', 'G. Mahdor', 1)`
                     ).run(
                         `Perkuliahan Statistika TI25C - Pertemuan ${nextMeeting}`,
-                        `Jadwal tatap muka perkuliahan Statistika jam 13:00 - 15:30 WIB di Ruang Teori Gedung Kuliah. Dosen Pengampu: ${course.lecturer_name || 'RIFQI HIDAYAT'}.`,
+                        `Jadwal tatap muka perkuliahan Statistika jam 13:00 - 15:30 WIB di G. Mahdor R. C 306. Dosen Pengampu: ${course.lecturer_name || 'RIFQI HIDAYAT'}.`,
                         wib.dateString,
                         '13:00'
                     );
@@ -119,7 +119,7 @@ async function checkSchedulerTick() {
                         notifStmt.run(
                             s.id,
                             'Pengingat Kuliah Statistika Hari Ini',
-                            `Hari ini terdapat perkuliahan tatap muka Statistika (Pertemuan ke-${nextMeeting}) pukul 13:00 - 15:30 WIB di Ruang Teori Gedung Kuliah.`
+                            `Hari ini terdapat perkuliahan tatap muka Statistika (Pertemuan ke-${nextMeeting}) pukul 13:00 - 15:30 WIB di G. Mahdor R. C 306.`
                         );
                     });
 

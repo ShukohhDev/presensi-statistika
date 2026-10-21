@@ -596,7 +596,7 @@ export function Profile() {
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Ruang Kuliah</td>
                                         <td>:</td>
-                                        <td>{courseInfo?.room || 'Ruang Teori Gedung Kuliah'}</td>
+                                        <td>{courseInfo?.room || 'G. Mahdor R. C 306'}</td>
                                     </tr>
                                 </tbody>
                             </table>
