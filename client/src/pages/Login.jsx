@@ -8,6 +8,7 @@ export function Login() {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { user, login } = useAuth();
@@ -32,7 +33,7 @@ export function Login() {
 
         try {
             setLoading(true);
-            const loggedInUser = await login(name.trim(), password.trim());
+            const loggedInUser = await login(name.trim(), password.trim(), rememberMe);
             addToast(`Selamat datang, ${loggedInUser.name}!`, 'success');
             navigate(loggedInUser.role === 'admin' ? '/admin' : '/presensi', { replace: true });
         } catch (err) {
@@ -122,11 +123,28 @@ export function Login() {
                         </div>
                     </div>
 
+                    <div style={{ margin: '14px 0 6px' }}>
+                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', fontSize: '0.813rem', color: 'var(--color-text)', userSelect: 'none' }}>
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                style={{ width: '16px', height: '16px', marginTop: '2px', cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                            />
+                            <div>
+                                <span style={{ fontWeight: 500 }}>Ingat saya di perangkat ini</span>
+                                <span style={{ display: 'block', fontSize: '0.725rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                                    Biarkan tidak dicentang jika menggunakan HP/laptop teman agar sesi hanya aktif di tab ini dan meminta login ulang di tab lain.
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+
                     <button
                         type="submit"
                         className="btn btn-primary btn-block btn-lg"
                         disabled={loading}
-                        style={{ marginTop: '20px' }}
+                        style={{ marginTop: '16px' }}
                     >
                         {loading ? 'Memverifikasi Kredensial...' : 'Masuk ke Portal'}
                     </button>

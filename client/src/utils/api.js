@@ -1,7 +1,18 @@
 export const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
 
+export function getStoredToken() {
+    return sessionStorage.getItem('token') || localStorage.getItem('token');
+}
+
+export function clearStoredAuth() {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+}
+
 async function request(endpoint, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = getStoredToken();
     const headers = { ...options.headers };
 
     if (token) {
@@ -20,8 +31,7 @@ async function request(endpoint, options = {}) {
     if (response.status === 401 || response.status === 403) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 401 && endpoint !== '/api/auth/login') {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearStoredAuth();
             window.location.href = '/';
         }
         throw new Error(errorData.error || 'Akses ditolak');
@@ -165,7 +175,7 @@ export const api = {
                 document.body.removeChild(a);
             }, 150);
         } catch (err) {
-            const token = localStorage.getItem('token');
+            const token = getStoredToken();
             if (token) {
                 window.location.href = `${API_URL}/api/admin/export/excel?token=${encodeURIComponent(token)}`;
                 return;
@@ -188,7 +198,7 @@ export const api = {
                 document.body.removeChild(a);
             }, 150);
         } catch (err) {
-            const token = localStorage.getItem('token');
+            const token = getStoredToken();
             if (token) {
                 window.location.href = `${API_URL}/api/admin/export/csv?token=${encodeURIComponent(token)}`;
                 return;
