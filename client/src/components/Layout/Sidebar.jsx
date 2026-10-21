@@ -163,7 +163,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <div className="sidebar-section-title">Komunitas & Akun</div>
 
                     <a
-                        href="https://chat.whatsapp.com/sample-statistika-ti25c"
+                        href="https://chat.whatsapp.com/BoluTrJnZ0p7nQ0FtONain"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="sidebar-item"

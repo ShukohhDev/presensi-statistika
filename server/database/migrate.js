@@ -24,7 +24,7 @@ function migrate() {
             schedule_day TEXT DEFAULT 'Kamis',
             schedule_time TEXT DEFAULT '13:00 - 15:30 WIB',
             room TEXT DEFAULT 'G. Mahdor R. C 306',
-            whatsapp_group_link TEXT DEFAULT 'https://chat.whatsapp.com/sample-statistika-ti25c',
+            whatsapp_group_link TEXT DEFAULT 'https://chat.whatsapp.com/BoluTrJnZ0p7nQ0FtONain',
             pj_whatsapp_phone TEXT DEFAULT '',
             auto_session_enabled INTEGER DEFAULT 1,
             auto_open_time TEXT DEFAULT '13:00',

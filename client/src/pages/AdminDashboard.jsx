@@ -77,7 +77,7 @@ export function AdminDashboard() {
         auto_close_time: '15:45',
         tolerance_minutes: 30,
         room: 'G. Mahdor R. C 306',
-        whatsapp_group_link: 'https://chat.whatsapp.com/sample-statistika-ti25c',
+        whatsapp_group_link: 'https://chat.whatsapp.com/BoluTrJnZ0p7nQ0FtONain',
         pj_whatsapp_phone: ''
     });
     const [savingCourse, setSavingCourse] = useState(false);
