@@ -62,6 +62,7 @@ export function AdminDashboard() {
     // Session attendances list for active session inspection
     const [sessionAttendances, setSessionAttendances] = useState([]);
     const [loadingAttendances, setLoadingAttendances] = useState(false);
+    const [selectedVerificationSessionId, setSelectedVerificationSessionId] = useState(null);
 
     // Feature 4: Course Info & Lecturer Settings modal
     const [courseModalOpen, setCourseModalOpen] = useState(false);
@@ -121,8 +122,12 @@ export function AdminDashboard() {
 
             // If there's an active session, load its detailed attendance list
             if (activeData?.session) {
+                setSelectedVerificationSessionId(activeData.session.id);
+                setTargetSessionId(activeData.session.id);
                 loadSessionAttendances(activeData.session.id);
             } else if (sessionsData?.sessions && sessionsData.sessions.length > 0) {
+                setSelectedVerificationSessionId(sessionsData.sessions[0].id);
+                setTargetSessionId(sessionsData.sessions[0].id);
                 loadSessionAttendances(sessionsData.sessions[0].id);
             }
 
@@ -438,9 +443,9 @@ PJ MK Statistika Kelas TI25C`;
         }
     };
 
-    const handleOpenEditStatus = (student) => {
+    const handleOpenEditStatus = (student, preferredSessionId) => {
         setSelectedStudent(student);
-        const currentSession = activeSession?.id || (sessions.length > 0 ? sessions[0].id : null);
+        const currentSession = preferredSessionId || selectedVerificationSessionId || activeSession?.id || (sessions.length > 0 ? sessions[0].id : null);
         setTargetSessionId(currentSession);
         setSelectedStatus('hadir');
         setEditModalOpen(true);
@@ -458,6 +463,9 @@ PJ MK Statistika Kelas TI25C`;
             await api.updateAttendanceStatus(selectedStudent.id, targetSessionId, selectedStatus);
             addToast(`Status kehadiran ${selectedStudent.name} berhasil diperbarui.`, 'success');
             setEditModalOpen(false);
+            if (targetSessionId) {
+                await loadSessionAttendances(targetSessionId);
+            }
             await loadDashboardData();
         } catch (err) {
             addToast(err.message || 'Gagal mengubah status kehadiran.', 'error');
@@ -956,30 +964,74 @@ PJ MK Statistika Kelas TI25C`;
 
             {/* Panel Daftar Kehadiran Sesi & Verifikasi Surat Bukti Izin/Sakit */}
             <div className="card" style={{ marginBottom: '32px' }}>
-                <div className="card-header" style={{ flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                        <h2 className="card-title">
-                            Verifikasi Kehadiran Sesi {activeSession ? `Aktif (P${activeSession.meeting_number})` : sessions.length > 0 ? `(P${sessions[0].meeting_number})` : ''}
-                        </h2>
-                        <p className="card-subtitle">
-                            Periksa surat dokter/bukti izin mahasiswa dan salin rekap ke WhatsApp dosen
+                <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ flex: '1 1 280px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <h2 className="card-title" style={{ margin: 0 }}>
+                                Verifikasi Kehadiran Sesi
+                            </h2>
+                            {activeSession ? (
+                                <span className="badge-status badge-active-session" style={{ fontSize: '0.688rem' }}>
+                                    Sedang Aktif (P{activeSession.meeting_number})
+                                </span>
+                            ) : sessions.length > 0 ? (
+                                <span className="badge-status badge-info" style={{ fontSize: '0.688rem' }}>
+                                    {sessions.length} Sesi Terdata
+                                </span>
+                            ) : null}
+                        </div>
+                        <p className="card-subtitle" style={{ marginTop: '2px' }}>
+                            Periksa surat dokter/bukti izin mahasiswa, ubah status kehadiran, dan salin rekap ke WhatsApp dosen
                         </p>
                     </div>
+
+                    {/* Dropdown Pemilih Sesi Pertemuan (Aktif maupun Riwayat Lampau) */}
+                    {(activeSession || sessions.length > 0) && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                Pilih Sesi:
+                            </span>
+                            <select
+                                value={selectedVerificationSessionId || (activeSession?.id || (sessions[0]?.id || ''))}
+                                onChange={(e) => {
+                                    const id = Number(e.target.value);
+                                    setSelectedVerificationSessionId(id);
+                                    setTargetSessionId(id);
+                                    loadSessionAttendances(id);
+                                }}
+                                className="form-select form-select-sm"
+                                style={{ width: 'auto', minWidth: '190px', fontWeight: 600 }}
+                            >
+                                {activeSession && (
+                                    <option value={activeSession.id}>
+                                        🟢 Sesi Aktif: P{activeSession.meeting_number} - {activeSession.title}
+                                    </option>
+                                )}
+                                {sessions.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        Pertemuan {s.meeting_number}: {s.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button
                             type="button"
                             className="btn btn-secondary btn-sm"
-                            onClick={() => handleCopyNudgeWA(activeSession?.id || (sessions.length > 0 ? sessions[0].id : null))}
+                            onClick={() => handleCopyNudgeWA(selectedVerificationSessionId || activeSession?.id || (sessions.length > 0 ? sessions[0].id : null))}
                             style={{ borderColor: '#25D366', color: '#128C7E' }}
+                            disabled={!activeSession && sessions.length === 0}
                         >
                             <WhatsAppIcon size={16} /> Salin Pengingat Belum Presensi
                         </button>
                         <button
                             type="button"
                             className="btn btn-secondary btn-sm"
-                            onClick={() => handleCopyWASummary(activeSession?.id || (sessions.length > 0 ? sessions[0].id : null))}
+                            onClick={() => handleCopyWASummary(selectedVerificationSessionId || activeSession?.id || (sessions.length > 0 ? sessions[0].id : null))}
                             style={{ borderColor: '#25D366', color: '#128C7E' }}
+                            disabled={!activeSession && sessions.length === 0}
                         >
                             <WhatsAppIcon size={16} /> Salin Format WA Dosen
                         </button>
@@ -989,6 +1041,30 @@ PJ MK Statistika Kelas TI25C`;
                 {loadingAttendances ? (
                     <div className="text-center text-muted" style={{ padding: '24px 0' }}>
                         Memuat data kehadiran sesi...
+                    </div>
+                ) : !activeSession && sessions.length === 0 ? (
+                    <div className="empty-state" style={{ padding: '36px 16px', textAlign: 'center' }}>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', color: 'var(--color-primary)' }}>
+                            <ClockIcon size={26} />
+                        </div>
+                        <h3 style={{ fontSize: '1.1rem', margin: '0 0 6px' }}>Belum Ada Sesi Presensi yang Berjalan</h3>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', maxWidth: '520px', margin: '0 auto 16px' }}>
+                            Jadwal otomatis akan membuka sesi presensi setiap <strong>Kamis pukul 13:00 WIB</strong>. 
+                            Anda juga dapat membuka sesi pertemuan sekarang secara manual melalui panel <em>"Panel Kendali Sesi Presensi"</em> di atas untuk langsung mulai memverifikasi kehadiran mahasiswa.
+                        </p>
+                        <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => {
+                                const inputEl = document.getElementById('meetingNumber');
+                                if (inputEl) {
+                                    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    inputEl.focus();
+                                }
+                            }}
+                        >
+                            Buka Pertemuan 1 Sekarang &rarr;
+                        </button>
                     </div>
                 ) : sessionAttendances.length === 0 ? (
                     <div className="empty-state" style={{ padding: '24px 0' }}>
@@ -1004,6 +1080,7 @@ PJ MK Statistika Kelas TI25C`;
                                     <th>Status</th>
                                     <th>Keterangan / Catatan</th>
                                     <th>Surat Bukti</th>
+                                    <th style={{ textAlign: 'right' }}>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1032,6 +1109,21 @@ PJ MK Statistika Kelas TI25C`;
                                             ) : (
                                                 <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>-</span>
                                             )}
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary btn-xs"
+                                                onClick={() => {
+                                                    const std = students.find(s => s.id === att.user_id) || { id: att.user_id, name: att.name };
+                                                    handleOpenEditStatus(std, selectedVerificationSessionId);
+                                                }}
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                                title="Ubah status kehadiran mahasiswa ini"
+                                            >
+                                                <EditIcon size={13} />
+                                                <span>Ubah</span>
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
