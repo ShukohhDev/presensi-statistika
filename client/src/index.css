@@ -725,8 +725,8 @@ input:focus, textarea:focus, select:focus {
 }
 
 .navbar-logo-box {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 41px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -735,20 +735,19 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-hover);
+  background-color: #0b0f19;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .navbar-brand:hover .navbar-logo-box {
   transform: scale(1.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .navbar-logo-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
   display: block;
 }
 
@@ -1703,28 +1702,30 @@ input:focus, textarea:focus, select:focus {
 }
 
 .login-logo-box {
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 108px;
   margin: 10px auto 14px;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
-  border: 2px solid var(--color-border);
-  background-color: var(--color-bg-card);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16);
+  border: 1.5px solid var(--color-border);
+  background-color: #0b0f19;
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-logo-box:hover {
   transform: scale(1.05);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
 }
 
 .login-logo-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
   display: block;
 }
 

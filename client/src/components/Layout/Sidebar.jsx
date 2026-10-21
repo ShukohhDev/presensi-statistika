@@ -205,19 +205,29 @@ export function Sidebar({ isOpen, onClose }) {
                     alignItems: 'center',
                     gap: '10px'
                 }}>
-                    <img
-                        src={siteLogo}
-                        alt="Logo Ketelitian"
-                        style={{
-                            width: '34px',
-                            height: '34px',
-                            borderRadius: 'var(--radius-sm)',
-                            objectFit: 'cover',
-                            objectPosition: 'center top',
-                            border: '1px solid var(--color-border)',
-                            flexShrink: 0
-                        }}
-                    />
+                    <div style={{
+                        width: '34px',
+                        height: '41px',
+                        borderRadius: 'var(--radius-sm)',
+                        overflow: 'hidden',
+                        backgroundColor: '#0b0f19',
+                        border: '1px solid var(--color-border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                    }}>
+                        <img
+                            src={siteLogo}
+                            alt="Logo Ketelitian"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                display: 'block'
+                            }}
+                        />
+                    </div>
                     <div style={{ overflow: 'hidden' }}>
                         <div style={{ fontSize: '0.781rem', fontWeight: 700, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             Statistika TI25C
