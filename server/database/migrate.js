@@ -204,6 +204,19 @@ function migrate() {
                 console.log(`Akun mahasiswa ${student.name} (${student.password}) berhasil ditambahkan ke database.`);
             }
         }
+
+        // 3. Standarisasi huruf kapital nama mahasiswa agar berurutan abjad dengan benar
+        const capitalFixes = [
+            { oldName: 'ahmad fajar', newName: 'Ahmad Fajar' },
+            { oldName: 'dafa rizki', newName: 'Dafa Rizki' },
+            { oldName: 'naufal irsyadillah', newName: 'Naufal Irsyadillah' },
+            { oldName: 'zain akbar mujahidan', newName: 'Zain Akbar Mujahidan' },
+            { oldName: 'Rommy zaidan zidna fann', newName: 'Rommy Zaidan Zidna Fann' }
+        ];
+
+        for (const item of capitalFixes) {
+            db.prepare('UPDATE users SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE name = ? COLLATE NOCASE').run(item.newName, item.oldName);
+        }
     } catch (err) {
         console.error('Error saat sinkronisasi data akun mahasiswa:', err);
     }

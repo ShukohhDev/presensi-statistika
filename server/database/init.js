@@ -25,7 +25,7 @@ function initDb() {
         if (!existingCount || existingCount.count === 0) {
             console.log('Inisialisasi data awal database...');
             const students = [
-                { name: 'dafa rizki', password: '250511019', role: 'user' },
+                { name: 'Dafa Rizki', password: '250511019', role: 'user' },
                 { name: 'Choirul Mustakim', password: '250511017', role: 'user' },
                 { name: 'Muhammad Reza Pahlevi Fairuz', password: '250511029', role: 'user' },
                 { name: 'Putri Dian Puspita Sari', password: '250511004', role: 'user' },
@@ -35,13 +35,13 @@ function initDb() {
                 { name: 'Putra Sadewo', password: '250511121', role: 'user' },
                 { name: 'Dipo Endratanaya Kunto', password: '250511095', role: 'user' },
                 { name: 'Bayu Setiawan Hadi', password: '250511082', role: 'user' },
-                { name: 'Rommy zaidan zidna fann', password: '250511115', role: 'user' },
+                { name: 'Rommy Zaidan Zidna Fann', password: '250511115', role: 'user' },
                 { name: 'Sayyid Sakhiy Sulaeman', password: '250511048', role: 'user' },
                 { name: 'Handini', password: '250511087', role: 'user' },
                 { name: 'Tyara Septyanita', password: '250511078', role: 'user' },
                 { name: 'Syifa Hayatun Nisa', password: '250511089', role: 'user' },
                 { name: 'Ananda Abel Deas Pratama', password: '250511023', role: 'user' },
-                { name: 'zain akbar mujahidan', password: '250511097', role: 'user' },
+                { name: 'Zain Akbar Mujahidan', password: '250511097', role: 'user' },
                 { name: "Muhammad 'Azmi", password: '250511043', role: 'user' },
                 { name: 'IlhamAuliatullah', password: '250511022', role: 'user' },
                 { name: 'Rengga Ramdani Anggari', password: '250511053', role: 'user' },
@@ -50,8 +50,8 @@ function initDb() {
                 { name: 'Nisa Amaliyah Zahira', password: '250511133', role: 'user' },
                 { name: 'Ahmad Azhar Ibrahim', password: '250511108', role: 'user' },
                 { name: 'Asep Fauzan Muhammad Salman Al Baihaqi', password: '250511079', role: 'user' },
-                { name: 'naufal irsyadillah', password: '250511088', role: 'user' },
-                { name: 'ahmad fajar', password: '250511091', role: 'user' },
+                { name: 'Naufal Irsyadillah', password: '250511088', role: 'user' },
+                { name: 'Ahmad Fajar', password: '250511091', role: 'user' },
                 { name: 'Fadilah Wildan Firdaus', password: '250511125', role: 'user' },
                 { name: 'Andhika Prasetia Nugraha Putra', password: '250511103', role: 'user' },
             ];

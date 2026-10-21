@@ -115,7 +115,7 @@ router.get('/sessions', authenticateToken, requireAdmin, (req, res) => {
 router.get('/students', authenticateToken, requireAdmin, (req, res) => {
     try {
         const db = getDb();
-        const students = db.prepare("SELECT id, name, profile_photo, created_at FROM users WHERE role = 'user' ORDER BY name").all();
+        const students = db.prepare("SELECT id, name, profile_photo, created_at FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
         res.json({ students });
     } catch (err) {
         console.error('Get students error:', err);
@@ -127,7 +127,7 @@ router.get('/students', authenticateToken, requireAdmin, (req, res) => {
 router.get('/export/excel', authenticateToken, requireAdmin, (req, res) => {
     try {
         const db = getDb();
-        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name").all();
+        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
         const sessions = db.prepare('SELECT * FROM sessions ORDER BY meeting_number ASC').all();
         const courseInfo = db.prepare('SELECT * FROM course_info WHERE id = 1').get() || {};
 
@@ -247,7 +247,7 @@ router.get('/export/excel', authenticateToken, requireAdmin, (req, res) => {
 router.get('/export/csv', authenticateToken, requireAdmin, (req, res) => {
     try {
         const db = getDb();
-        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name").all();
+        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
         const sessions = db.prepare('SELECT * FROM sessions ORDER BY meeting_number ASC').all();
 
         let csv = 'No,Nama Mahasiswa';
@@ -335,7 +335,7 @@ router.get('/session/:id/attendances', authenticateToken, requireAdmin, (req, re
             return res.status(404).json({ error: 'Sesi tidak ditemukan.' });
         }
 
-        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name").all();
+        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
         const attendances = db.prepare('SELECT * FROM attendance WHERE session_id = ?').all(sessionId);
 
         const attendanceMap = {};
@@ -374,7 +374,7 @@ router.get('/session/:id/wa-summary', authenticateToken, requireAdmin, (req, res
         }
 
         const course = db.prepare('SELECT * FROM course_info WHERE id = 1').get() || {};
-        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name").all();
+        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
         const attendances = db.prepare('SELECT * FROM attendance WHERE session_id = ?').all(sessionId);
 
         const attendanceMap = {};
@@ -564,13 +564,52 @@ router.post('/auto-session/skip-week', authenticateToken, requireAdmin, (req, re
         db.prepare('INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)')
             .run(req.user.id, 'skip_pekan', newSkip ? 'Menyetel perkuliahan pekan ini DILIBURKAN' : 'Membatalkan status libur perkuliahan pekan ini');
 
+// POST /api/admin/fix-student-names - Perbaiki kapitalisasi nama mahasiswa
+router.post('/fix-student-names', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const db = getDb();
+        const updates = [
+            { oldName: 'ahmad fajar', newName: 'Ahmad Fajar' },
+            { oldName: 'dafa rizki', newName: 'Dafa Rizki' },
+            { oldName: 'naufal irsyadillah', newName: 'Naufal Irsyadillah' },
+            { oldName: 'zain akbar mujahidan', newName: 'Zain Akbar Mujahidan' },
+            { oldName: 'Rommy zaidan zidna fann', newName: 'Rommy Zaidan Zidna Fann' }
+        ];
+
+        let changed = 0;
+        for (const u of updates) {
+            const r = db.prepare('UPDATE users SET name = ? WHERE name = ? COLLATE NOCASE').run(u.newName, u.oldName);
+            changed += r.changes;
+        }
+
+        const students = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
+
         res.json({
-            message: newSkip ? 'Perkuliahan pekan ini ditandai LIBUR. Sistem tidak akan membuka sesi otomatis.' : 'Status libur dibatalkan. Sesi akan berjalan normal.',
-            skip_next_session: newSkip
+            message: 'Nama mahasiswa berhasil diperbarui menjadi huruf kapital dan diurutkan sesuai abjad.',
+            changed,
+            students
         });
     } catch (err) {
-        console.error('Skip week error:', err);
-        res.status(500).json({ error: 'Gagal mengubah status pekan libur.' });
+        console.error('Fix student names error:', err);
+        res.status(500).json({ error: 'Terjadi kesalahan server saat memperbarui nama mahasiswa.' });
+    }
+});
+
+// PUT /api/admin/student/:id - Update nama mahasiswa
+router.put('/student/:id', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const db = getDb();
+        const { id } = req.params;
+        const { name } = req.body;
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Nama mahasiswa wajib diisi.' });
+        }
+        db.prepare("UPDATE users SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND role = 'user'")
+            .run(name.trim(), id);
+        res.json({ message: 'Nama mahasiswa berhasil diperbarui.', name: name.trim() });
+    } catch (err) {
+        console.error('Update student error:', err);
+        res.status(500).json({ error: 'Terjadi kesalahan server.' });
     }
 });
 

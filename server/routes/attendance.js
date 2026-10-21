@@ -149,7 +149,7 @@ router.get('/recap', authenticateToken, (req, res) => {
     try {
         const db = getDb();
         const users = req.user.role === 'admin'
-            ? db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name").all()
+            ? db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all()
             : db.prepare("SELECT id, name FROM users WHERE id = ?").all(req.user.id);
         const sessions = db.prepare('SELECT * FROM sessions ORDER BY meeting_number ASC').all();
 

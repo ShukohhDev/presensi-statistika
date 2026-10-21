@@ -109,6 +109,8 @@ export const api = {
         request('/api/admin/sessions'),
     getStudents: () =>
         request('/api/admin/students'),
+    fixStudentNames: () =>
+        request('/api/admin/fix-student-names', { method: 'POST' }),
     getDashboardStats: () =>
         request('/api/admin/dashboard-stats'),
     getSessionAttendances: (sessionId) =>

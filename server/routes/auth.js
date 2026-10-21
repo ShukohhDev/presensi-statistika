@@ -24,7 +24,7 @@ router.post('/login', loginLimiter, (req, res) => {
         }
 
         const db = getDb();
-        const user = db.prepare('SELECT * FROM users WHERE name = ?').get(name);
+        const user = db.prepare('SELECT * FROM users WHERE name = ? COLLATE NOCASE').get(name.trim());
 
         if (!user) {
             return res.status(401).json({ error: 'Nama atau password salah.' });

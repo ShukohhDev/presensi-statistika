@@ -275,7 +275,7 @@ router.get('/assignments/:id/status', authenticateToken, requireAdmin, (req, res
             return res.status(404).json({ error: 'Penugasan tidak ditemukan.' });
         }
 
-        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name").all();
+        const users = db.prepare("SELECT id, name FROM users WHERE role = 'user' ORDER BY name COLLATE NOCASE ASC").all();
         const submissions = db.prepare('SELECT * FROM tasks WHERE assignment_id = ?').all(assignmentId);
 
         const submissionMap = {};
