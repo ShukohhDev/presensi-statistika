@@ -5,27 +5,27 @@ import { api } from '../utils/api';
 const ThemeContext = createContext(null);
 
 export const THEMES = [
-    { id: 'biru-klasik', name: 'Biru Microsoft', swatch: '#0078D4' },
-    { id: 'midnight', name: 'Navy Modern', swatch: '#004E8C' },
-    { id: 'ocean', name: 'Teal Fluent', swatch: '#038387' },
-    { id: 'slate', name: 'Steel Blue', swatch: '#3A6BA5' },
-    { id: 'arctic', name: 'Sky Fluent', swatch: '#0099BC' },
-    { id: 'steel', name: 'Slate Neutral', swatch: '#5C6B73' },
-    { id: 'navy', name: 'Deep Navy', swatch: '#0B4F8A' },
+    { id: 'excel-statistika', name: 'Excel & Data Green', swatch: '#107C41' },
+    { id: 'ocean', name: 'Power BI Teal', swatch: '#038387' },
+    { id: 'midnight', name: 'Academic Navy', swatch: '#004E8C' },
+    { id: 'biru-klasik', name: 'Microsoft Blue', swatch: '#0078D4' },
+    { id: 'slate', name: 'Slate Steel', swatch: '#2B5B84' },
+    { id: 'arctic', name: 'Cyan Analytics', swatch: '#0099BC' },
+    { id: 'steel', name: 'Graphite Neutral', swatch: '#5C6B73' },
 ];
 
 export function ThemeProvider({ children }) {
     const { settings, updateSettings } = useAuth();
-    const [theme, setThemeState] = useState('biru-klasik');
+    const [theme, setThemeState] = useState('excel-statistika');
     const [darkMode, setDarkModeState] = useState(false);
 
     // Load from settings or localStorage
     useEffect(() => {
         if (settings) {
-            setThemeState(settings.theme || 'biru-klasik');
+            setThemeState(settings.theme || 'excel-statistika');
             setDarkModeState(settings.dark_mode === 1);
         } else {
-            const savedTheme = localStorage.getItem('theme') || 'biru-klasik';
+            const savedTheme = localStorage.getItem('theme') || 'excel-statistika';
             const savedDark = localStorage.getItem('darkMode') === 'true';
             setThemeState(savedTheme);
             setDarkModeState(savedDark);

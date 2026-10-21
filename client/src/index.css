@@ -54,20 +54,20 @@
   --z-notification: 500;
 
   /* Status Semantik Microsoft */
-  --color-status-hadir: #107C10;
+  --color-status-hadir: #107C41;
   --color-status-izin: #D83B01;
   --color-status-sakit: #0078D4;
   --color-status-alpha: #D13438;
 
-  /* Palet Warna Mode Terang (Default Microsoft Fluent) */
-  --color-primary: #0078D4;
-  --color-primary-hover: #106EBE;
-  --color-primary-active: #005A9E;
-  --color-primary-light: #EFF6FC;
-  --color-primary-subtle: #F3F9FD;
+  /* Palet Warna Mode Terang (Default: Excel & Data Analytics Green #107C41) */
+  --color-primary: #107C41;
+  --color-primary-hover: #0E6B37;
+  --color-primary-active: #0B582D;
+  --color-primary-light: #EBF7F0;
+  --color-primary-subtle: #F3FAF6;
   --color-secondary: #616161;
   --color-secondary-hover: #484644;
-  --color-accent: #0078D4;
+  --color-accent: #107C41;
   --color-bg: #F5F5F5;
   --color-bg-card: #FFFFFF;
   --color-bg-sidebar: #FFFFFF;
@@ -79,10 +79,10 @@
   --color-border: rgba(0, 0, 0, 0.06);
   --color-border-solid: #E5E5E5;
   --color-border-hover: rgba(0, 0, 0, 0.14);
-  --color-border-focus: #0078D4;
+  --color-border-focus: #107C41;
   --color-border-bottom-input: rgba(0, 0, 0, 0.4);
-  --color-success: #107C10;
-  --color-success-light: rgba(16, 124, 16, 0.08);
+  --color-success: #107C41;
+  --color-success-light: rgba(16, 124, 65, 0.08);
   --color-warning: #D83B01;
   --color-warning-light: rgba(216, 59, 1, 0.08);
   --color-danger: #D13438;
@@ -92,7 +92,44 @@
   --color-overlay: rgba(0, 0, 0, 0.4);
 }
 
-/* ---- Theme: Biru Microsoft (Default Light) ---- */
+/* ---- Theme: Excel & Data Analytics Green (Default Light) ---- */
+[data-theme="excel-statistika"] {
+  --color-primary: #107C41;
+  --color-primary-hover: #0E6B37;
+  --color-primary-active: #0B582D;
+  --color-primary-light: #EBF7F0;
+  --color-primary-subtle: #F3FAF6;
+  --color-secondary: #616161;
+  --color-secondary-hover: #484644;
+  --color-accent: #107C41;
+  --color-bg: #F5F5F5;
+  --color-bg-card: #FFFFFF;
+  --color-bg-sidebar: #FFFFFF;
+  --color-bg-input: #FFFFFF;
+  --color-bg-hover: #F3F2F1;
+  --color-text: #242424;
+  --color-text-secondary: #616161;
+  --color-text-muted: #8A8886;
+  --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-solid: #E5E5E5;
+  --color-border-hover: rgba(0, 0, 0, 0.14);
+  --color-border-focus: #107C41;
+  --color-status-hadir: #107C41;
+  --color-status-izin: #D83B01;
+  --color-status-sakit: #0078D4;
+  --color-status-alpha: #D13438;
+  --color-success: #107C41;
+  --color-success-light: rgba(16, 124, 65, 0.08);
+  --color-warning: #D83B01;
+  --color-warning-light: rgba(216, 59, 1, 0.08);
+  --color-danger: #D13438;
+  --color-danger-light: rgba(209, 52, 56, 0.08);
+  --color-info: #0078D4;
+  --color-info-light: rgba(0, 120, 212, 0.08);
+  --color-overlay: rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Theme: Biru Microsoft ---- */
 [data-theme="biru-klasik"] {
   --color-primary: #0078D4;
   --color-primary-hover: #106EBE;
@@ -114,12 +151,12 @@
   --color-border-solid: #E5E5E5;
   --color-border-hover: rgba(0, 0, 0, 0.14);
   --color-border-focus: #0078D4;
-  --color-status-hadir: #107C10;
+  --color-status-hadir: #107C41;
   --color-status-izin: #D83B01;
   --color-status-sakit: #0078D4;
   --color-status-alpha: #D13438;
-  --color-success: #107C10;
-  --color-success-light: rgba(16, 124, 16, 0.08);
+  --color-success: #107C41;
+  --color-success-light: rgba(16, 124, 65, 0.08);
   --color-warning: #D83B01;
   --color-warning-light: rgba(216, 59, 1, 0.08);
   --color-danger: #D13438;
@@ -129,8 +166,51 @@
   --color-overlay: rgba(0, 0, 0, 0.4);
 }
 
-/* ---- Global Dark Mode & Biru Microsoft Dark ---- */
+/* ---- Global Dark Mode & Excel Green Dark ---- */
 .dark,
+[data-theme="excel-statistika"].dark {
+  --color-primary: #27A75E;
+  --color-primary-hover: #36B76E;
+  --color-primary-active: #1E8C4C;
+  --color-primary-light: #163324;
+  --color-primary-subtle: #11261B;
+  --color-secondary: #D1D1D1;
+  --color-secondary-hover: #FFFFFF;
+  --color-accent: #27A75E;
+  --color-bg: #1F1F1F;
+  --color-bg-card: #2B2B2B;
+  --color-bg-sidebar: #2B2B2B;
+  --color-bg-input: #2B2B2B;
+  --color-bg-hover: #383838;
+  --color-text: #FFFFFF;
+  --color-text-secondary: #D1D1D1;
+  --color-text-muted: #979593;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-solid: #383838;
+  --color-border-hover: rgba(255, 255, 255, 0.16);
+  --color-border-focus: #27A75E;
+  --color-border-bottom-input: rgba(255, 255, 255, 0.55);
+  --color-status-hadir: #27A75E;
+  --color-status-izin: #F7630C;
+  --color-status-sakit: #2886DE;
+  --color-status-alpha: #E81123;
+  --color-success: #27A75E;
+  --color-success-light: rgba(39, 167, 94, 0.16);
+  --color-warning: #F7630C;
+  --color-warning-light: rgba(247, 99, 12, 0.16);
+  --color-danger: #E81123;
+  --color-danger-light: rgba(232, 17, 35, 0.16);
+  --color-info: #2886DE;
+  --color-info-light: rgba(40, 134, 222, 0.16);
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.4), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.45), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.5), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 32px 0 rgba(0, 0, 0, 0.6), 0 3px 8px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Biru Microsoft Dark ---- */
 [data-theme="biru-klasik"].dark {
   --color-primary: #2886DE;
   --color-primary-hover: #479EF5;
