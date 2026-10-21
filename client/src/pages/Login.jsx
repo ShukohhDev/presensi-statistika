@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { UserIcon, LockIcon, EyeIcon, EyeOffIcon } from '../components/Common/Icons';
+import siteLogo from '../assets/logo-ketelitian.jpg';
 
 export function Login() {
     const [name, setName] = useState('');
@@ -48,8 +49,12 @@ export function Login() {
             <div className="login-card">
                 <div className="login-header">
                     <span className="login-badge">PORTAL AKADEMIK TI25C</span>
-                    <div className="login-icon">
-                        <UserIcon size={24} />
+                    <div className="login-logo-box" title="Prinsip Ketelitian - Presensi MK Statistika">
+                        <img
+                            src={siteLogo}
+                            alt="Logo Presensi MK Statistika - Ketelitian"
+                            className="login-logo-img"
+                        />
                     </div>
                     <h1>Presensi MK Statistika</h1>
                     <p>Sistem Informasi dan Pencatatan Kehadiran Mahasiswa Kelas TI25C</p>

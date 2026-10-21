@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_URL } from '../../utils/api';
+import siteLogo from '../../assets/logo-ketelitian.jpg';
 import {
     CheckCircleIcon,
     ShieldIcon,
@@ -191,6 +192,40 @@ export function Sidebar({ isOpen, onClose }) {
                         <LogOutIcon size={18} />
                         <span>Keluar Akun</span>
                     </button>
+                </div>
+
+                {/* Identitas Website Presensi MK Statistika */}
+                <div style={{
+                    marginTop: 'auto',
+                    padding: '12px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--color-bg-hover)',
+                    border: '1px solid var(--color-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}>
+                    <img
+                        src={siteLogo}
+                        alt="Logo Ketelitian"
+                        style={{
+                            width: '34px',
+                            height: '34px',
+                            borderRadius: 'var(--radius-sm)',
+                            objectFit: 'cover',
+                            objectPosition: 'center top',
+                            border: '1px solid var(--color-border)',
+                            flexShrink: 0
+                        }}
+                    />
+                    <div style={{ overflow: 'hidden' }}>
+                        <div style={{ fontSize: '0.781rem', fontWeight: 700, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            Statistika TI25C
+                        </div>
+                        <div style={{ fontSize: '0.688rem', color: 'var(--color-text-muted)' }}>
+                            Motto: Ketelitian & Presisi
+                        </div>
+                    </div>
                 </div>
             </aside>
         </>

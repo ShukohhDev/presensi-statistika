@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BellIcon, SunIcon, MoonIcon } from '../Common/Icons';
+import siteLogo from '../../assets/logo-ketelitian.jpg';
 
 export function Navbar({ onToggleSidebar, isSidebarOpen, onToggleNotifications, unreadCount }) {
     const { user } = useAuth();
@@ -8,21 +10,18 @@ export function Navbar({ onToggleSidebar, isSidebarOpen, onToggleNotifications, 
 
     return (
         <header className="navbar">
-            <div className="navbar-brand">
-                <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--color-primary)',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 800,
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.04em'
-                }}>
-                    TI
+            <Link
+                to={user?.role === 'admin' ? '/admin' : '/presensi'}
+                className="navbar-brand"
+                style={{ textDecoration: 'none' }}
+                title="Presensi MK Statistika - Motto: Ketelitian"
+            >
+                <div className="navbar-logo-box">
+                    <img
+                        src={siteLogo}
+                        alt="Logo Presensi MK Statistika - Ketelitian"
+                        className="navbar-logo-img"
+                    />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <h1 style={{ fontSize: '0.975rem', fontWeight: 700, margin: 0, letterSpacing: '-0.02em', color: 'var(--color-text)' }}>
@@ -40,7 +39,7 @@ export function Navbar({ onToggleSidebar, isSidebarOpen, onToggleNotifications, 
                         {user?.role === 'admin' ? 'PJ MK' : 'Mahasiswa'}
                     </span>
                 </div>
-            </div>
+            </Link>
 
             <div className="navbar-actions">
                 <button
