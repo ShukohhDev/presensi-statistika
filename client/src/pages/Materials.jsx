@@ -91,9 +91,9 @@ export function Materials() {
 
         const studentName = user?.name || 'Mahasiswa TI25C';
         const typeLabel = m.category === 'dataset' ? 'Dataset Praktikum' : 'Materi Perkuliahan';
-        const text = `Samlekom (Shukoh#Dev), Gue ${studentName}.
+        const text = `Halo PJ MK Statistika, saya ${studentName} dari kelas TI25C.
 
-Mau nanya uy, yang ${typeLabel} Pertemuan ke-${m.meeting_number}:
+Izin bertanya terkait ${typeLabel} Pertemuan ke-${m.meeting_number}:
 Judul: "${m.title}"
 
 Pertanyaan saya: `;

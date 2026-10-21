@@ -5,13 +5,13 @@ import { api } from '../utils/api';
 const ThemeContext = createContext(null);
 
 export const THEMES = [
-    { id: 'biru-klasik', name: 'Biru Klasik', swatch: '#1D4ED8' },
-    { id: 'midnight', name: 'Midnight', swatch: '#1E40AF' },
-    { id: 'ocean', name: 'Ocean', swatch: '#0891B2' },
-    { id: 'slate', name: 'Slate', swatch: '#6366F1' },
-    { id: 'arctic', name: 'Arctic', swatch: '#38BDF8' },
-    { id: 'steel', name: 'Steel', swatch: '#4B7BF5' },
-    { id: 'navy', name: 'Navy', swatch: '#1E3A8A' },
+    { id: 'biru-klasik', name: 'Biru Microsoft', swatch: '#0078D4' },
+    { id: 'midnight', name: 'Navy Modern', swatch: '#004E8C' },
+    { id: 'ocean', name: 'Teal Fluent', swatch: '#038387' },
+    { id: 'slate', name: 'Steel Blue', swatch: '#3A6BA5' },
+    { id: 'arctic', name: 'Sky Fluent', swatch: '#0099BC' },
+    { id: 'steel', name: 'Slate Neutral', swatch: '#5C6B73' },
+    { id: 'navy', name: 'Deep Navy', swatch: '#0B4F8A' },
 ];
 
 export function ThemeProvider({ children }) {

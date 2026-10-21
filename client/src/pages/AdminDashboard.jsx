@@ -324,19 +324,19 @@ export function AdminDashboard() {
         try {
             setCopyingMorningWA(true);
             const meetingNum = activeSession ? activeSession.meeting_number : (sessions.length + 1);
-            const text = `*PENGINGAT KULIAH & PRESENSI STATISTIKA TI25C* 📊\n\n` +
-                `Selamat pagi rekan-rekan mahasiswa TI25C! 👋\n` +
+            const text = `*PENGINGAT KULIAH & PRESENSI STATISTIKA TI25C*\n\n` +
+                `Selamat pagi rekan-rekan mahasiswa TI25C!\n` +
                 `Hari ini *${courseInfo.schedule_day || 'Kamis'}*, perkuliahan Statistika akan dilaksanakan dengan rincian sbb:\n\n` +
-                `👨‍🏫 *Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'}\n` +
-                `⏰ *Waktu:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
-                `🏛️ *Ruang:* ${courseInfo.room || 'Ruang Teori Gedung Kuliah'}\n` +
-                `📖 *Agenda:* Pertemuan ke-${meetingNum}\n\n` +
-                `⚠️ *Ketentuan Presensi Portal:*\n` +
+                `*Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'}\n` +
+                `*Waktu:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
+                `*Ruang:* ${courseInfo.room || 'Ruang Teori Gedung Kuliah'}\n` +
+                `*Agenda:* Pertemuan ke-${meetingNum}\n\n` +
+                `*Ketentuan Presensi Portal:*\n` +
                 `• Akses absensi dibuka otomatis tepat pukul *13:00 WIB* dan ditutup tepat pukul *15:30 WIB*.\n` +
                 `• Toleransi keterlambatan: *${courseInfo.tolerance_minutes || 30} menit* (Presensi setelah 13:30 WIB otomatis bertanda *Terlambat*).\n` +
                 `• Portal Presensi: ${window.location.origin}/attendance\n\n` +
                 `Dimohon untuk hadir tepat waktu di kelas dan mempersiapkan diri. Terima kasih.\n\n` +
-                `- *Shukoh#Dev* (PJ MK Statistika Kelas TI25C)`;
+                `- *PJ MK Statistika Kelas TI25C*`;
 
             navigator.clipboard.writeText(text)
                 .then(() => addToast('Format WA Pengingat Pagi disalin ke clipboard! Siap dibagikan ke grup kelas.', 'success'))
@@ -397,7 +397,7 @@ Catatan:
 Mahasiswa wajib memenuhi kehadiran minimal 40% (7 pertemuan) untuk dapat mengikuti Ujian Akhir Semester (UAS) Statistika. Mohon maksimalkan kehadiran pada pertemuan berikutnya.
 
 Penanggung Jawab Mata Kuliah:
-Shukoh#Dev (PJ MK Statistika Kelas TI25C)`;
+PJ MK Statistika Kelas TI25C`;
 
         navigator.clipboard.writeText(text);
         addToast(`Format peringatan WA untuk ${student.name} berhasil disalin.`, 'success');
@@ -567,15 +567,15 @@ Shukoh#Dev (PJ MK Statistika Kelas TI25C)`;
                 </div>
             </div>
 
-            {/* Panel Otomasi Jadwal Presensi & Kontrol Cerdas (Khusus Shukoh#Dev) */}
-            <div className="card" style={{ marginBottom: '24px', border: autoSessionEnabled ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+            {/* Panel Otomasi Jadwal Presensi & Kontrol Cerdas (Admin PJ MK) */}
+            <div className="card" style={{ marginBottom: '24px', border: autoSessionEnabled ? '1px solid rgba(16, 124, 16, 0.4)' : '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '4px',
-                    background: autoSessionEnabled ? 'linear-gradient(90deg, #10B981, #059669)' : 'linear-gradient(90deg, #6B7280, #9CA3AF)'
+                    height: '3px',
+                    background: autoSessionEnabled ? 'var(--color-success)' : 'var(--color-border)'
                 }} />
 
                 <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border)' }}>

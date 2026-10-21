@@ -148,7 +148,7 @@ router.get('/export/excel', authenticateToken, requireAdmin, (req, res) => {
             `Ruang: ${courseInfo.room || 'Ruang Kuliah'}`
         ]);
         data.push([
-            `Penanggung Jawab (PJ MK): Shukoh#Dev`,
+            `Penanggung Jawab (PJ MK): PJ MK Statistika TI25C`,
             '',
             `Tanggal Unduh: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
         ]);
