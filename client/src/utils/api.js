@@ -33,10 +33,18 @@ async function request(endpoint, options = {}) {
         return response;
     }
 
-    const data = await response.json();
+    let data;
+    try {
+        data = await response.json();
+    } catch {
+        if (!response.ok) {
+            throw new Error(`Fitur ini sedang menunggu sinkronisasi rilis backend Railway (${response.status}). Silakan gunakan 'Buka Sesi Presensi' manual di panel bawah.`);
+        }
+        throw new Error('Format respon server tidak valid.');
+    }
 
     if (!response.ok) {
-        throw new Error(data.error || 'Terjadi kesalahan');
+        throw new Error(data?.error || 'Terjadi kesalahan pada server.');
     }
 
     return data;
