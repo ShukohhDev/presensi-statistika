@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import { useToast } from '../contexts/ToastContext';
 import {
@@ -453,8 +454,12 @@ export function Attendance() {
                 {isPanelOpen && (
                     <div style={{ marginTop: '20px' }}>
                         {loading ? (
-                            <div className="text-center text-muted" style={{ padding: '32px 0' }}>
-                                Memeriksa sesi presensi...
+                            <div style={{ padding: '8px 0' }}>
+                                <div className="skeleton skeleton-title" style={{ width: '45%', height: '18px' }} />
+                                <div className="skeleton skeleton-text" style={{ width: '80%', marginBottom: '16px' }} />
+                                <div className="skeleton skeleton-box" style={{ height: '62px', marginBottom: '10px' }} />
+                                <div className="skeleton skeleton-box" style={{ height: '62px', marginBottom: '10px' }} />
+                                <div className="skeleton skeleton-box" style={{ height: '62px' }} />
                             </div>
                         ) : userAttendance ? (
                             /* Tampilan Setelah Presensi Berhasil */
@@ -478,6 +483,37 @@ export function Attendance() {
                                         <div style={{ fontSize: '0.875rem', marginTop: '4px' }}>{userAttendance.note}</div>
                                     </div>
                                 )}
+
+                                {/* Konfirmasi Sinkronisasi Real-Time & Navigasi Cepat (Level 9.8 UX) */}
+                                <div style={{
+                                    marginTop: '20px',
+                                    padding: '12px 16px',
+                                    background: 'var(--color-bg-hover)',
+                                    borderRadius: 'var(--radius-control)',
+                                    border: '1px solid var(--color-border)',
+                                    textAlign: 'left',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    flexWrap: 'wrap',
+                                    gap: '12px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{
+                                            width: '8px',
+                                            height: '8px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--color-status-hadir)',
+                                            display: 'inline-block'
+                                        }} />
+                                        <span style={{ fontSize: '0.813rem', color: 'var(--color-text)' }}>
+                                            Tersimpan & tersinkronisasi otomatis ke rekap dosen
+                                        </span>
+                                    </div>
+                                    <Link to="/rekap" className="btn btn-secondary btn-xs" style={{ textDecoration: 'none', fontWeight: 600 }}>
+                                        Cek Status Kelayakan UAS &rarr;
+                                    </Link>
+                                </div>
                             </div>
                         ) : activeSession ? (
                             /* Sesi Presensi Sedang Dibuka */

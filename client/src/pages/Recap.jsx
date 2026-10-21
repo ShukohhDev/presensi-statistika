@@ -389,6 +389,64 @@ export function Recap() {
                 </div>
             )}
 
+            {/* Visual Milestone UAS 40% Progress Tracker (Tingkat Kematangan UX 9.8) */}
+            {!isAdmin && studentItem && (
+                <div className="uas-progress-container">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>
+                                    Simulator &amp; Status Kelayakan UAS (Batas Minimal 40%)
+                                </h3>
+                                <span className={`badge-status ${getUASStatus(studentItem.percentage || 0).badgeClass}`}>
+                                    {getUASStatus(studentItem.percentage || 0).label}
+                                </span>
+                            </div>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.813rem', color: 'var(--color-text-secondary)' }}>
+                                Syarat mutlak mengikuti UAS Mata Kuliah Statistika adalah minimal 40% kehadiran (minimal 7 dari 16 pertemuan)
+                            </p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-primary)', fontFamily: 'var(--font-mono)' }}>
+                                {studentItem.counts?.hadir || 0} / 16 Sesi
+                            </span>
+                            <span style={{ fontSize: '0.813rem', color: 'var(--color-text-muted)', marginLeft: '6px' }}>
+                                ({studentItem.percentage || 0}%)
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Bar Visual dengan Penanda Batas Merah 40% */}
+                    <div className="uas-bar-outer">
+                        <div className="uas-milestone-marker" />
+                        <div className="uas-milestone-label">Batas 40% (7 Sesi)</div>
+                        <div
+                            className={`uas-bar-inner ${
+                                (studentItem.percentage || 0) >= 55 ? 'success' : (studentItem.percentage || 0) >= 40 ? 'warning' : 'danger'
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(4, studentItem.percentage || 0))}%` }}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '0.813rem', color: 'var(--color-text-secondary)' }}>
+                        <div>
+                            {(studentItem.counts?.hadir || 0) >= 7 ? (
+                                <span style={{ color: 'var(--color-status-hadir)', fontWeight: 600 }}>
+                                    Status Aman: Kehadiran Anda telah melampaui batas minimal 40% (siap mengikuti UAS).
+                                </span>
+                            ) : (
+                                <span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>
+                                    Perhatian: Anda butuh hadir di minimal {7 - (studentItem.counts?.hadir || 0)} sesi perkuliahan lagi untuk mengamankan syarat UAS.
+                                </span>
+                            )}
+                        </div>
+                        <div style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
+                            Target: 7 Sesi | Tercapai: {studentItem.counts?.hadir || 0} Sesi
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Filter & Navigasi Tampilan */}
             <div className="card" style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
@@ -502,8 +560,13 @@ export function Recap() {
 
             {/* Tabel Konten */}
             {loading ? (
-                <div className="text-center text-muted" style={{ padding: '48px 0' }}>
-                    Memuat data rekapitulasi...
+                <div className="card" style={{ padding: '24px' }}>
+                    <div className="skeleton skeleton-title" style={{ width: '35%', height: '18px' }} />
+                    <div className="skeleton skeleton-text" style={{ width: '60%', marginBottom: '24px' }} />
+                    <div className="skeleton skeleton-box" style={{ height: '44px', marginBottom: '8px' }} />
+                    <div className="skeleton skeleton-box" style={{ height: '44px', marginBottom: '8px' }} />
+                    <div className="skeleton skeleton-box" style={{ height: '44px', marginBottom: '8px' }} />
+                    <div className="skeleton skeleton-box" style={{ height: '44px' }} />
                 </div>
             ) : displayedRecap.length === 0 ? (
                 <div className="card empty-state" style={{ padding: '48px 16px' }}>

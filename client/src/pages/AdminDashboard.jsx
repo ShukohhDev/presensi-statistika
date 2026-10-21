@@ -15,7 +15,9 @@ import {
     FileTextIcon,
     SettingsIcon,
     CalculatorIcon,
-    CalendarIcon
+    CalendarIcon,
+    SearchIcon,
+    XIcon
 } from '../components/Common/Icons';
 
 export function AdminDashboard() {
@@ -88,6 +90,7 @@ export function AdminDashboard() {
     const [togglingAuto, setTogglingAuto] = useState(false);
     const [togglingSkip, setTogglingSkip] = useState(false);
     const [copyingMorningWA, setCopyingMorningWA] = useState(false);
+    const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
     const { addToast } = useToast();
 
@@ -1044,6 +1047,50 @@ PJ MK Statistika Kelas TI25C`;
                     </button>
                 </div>
 
+                {/* Bar Pencarian Cepat Mahasiswa (Tingkat Kematangan UX 9.8) */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', flex: '1 1 280px', maxWidth: '380px' }}>
+                        <input
+                            type="text"
+                            className="form-input"
+                            placeholder="Cari nama mahasiswa..."
+                            value={studentSearchQuery}
+                            onChange={(e) => setStudentSearchQuery(e.target.value)}
+                            style={{ paddingLeft: '36px', paddingRight: studentSearchQuery ? '32px' : '12px' }}
+                        />
+                        <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
+                            <SearchIcon size={16} />
+                        </div>
+                        {studentSearchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => setStudentSearchQuery('')}
+                                style={{
+                                    position: 'absolute',
+                                    right: '10px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '2px'
+                                }}
+                                title="Hapus pencarian"
+                            >
+                                <XIcon size={14} />
+                            </button>
+                        )}
+                    </div>
+
+                    <span style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                        Menampilkan {students.filter(s => s.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim())).length} dari {students.length} mahasiswa
+                    </span>
+                </div>
+
                 <div className="table-container">
                     <table className="table">
                         <thead>
@@ -1055,24 +1102,33 @@ PJ MK Statistika Kelas TI25C`;
                             </tr>
                         </thead>
                         <tbody>
-                            {students.map((student, index) => (
-                                <tr key={student.id}>
-                                    <td>{index + 1}</td>
-                                    <td style={{ fontWeight: 600 }}>{student.name}</td>
-                                    <td>
-                                        <span className="badge-status badge-hadir">Aktif</span>
-                                    </td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={() => handleOpenEditStatus(student)}
-                                        >
-                                            <EditIcon size={14} /> Ubah Kehadiran
-                                        </button>
+                            {students
+                                .filter(s => s.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim()))
+                                .map((student, index) => (
+                                    <tr key={student.id}>
+                                        <td style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--color-text-muted)' }}>{index + 1}</td>
+                                        <td style={{ fontWeight: 600 }}>{student.name}</td>
+                                        <td>
+                                            <span className="badge-status badge-hadir">Aktif</span>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={() => handleOpenEditStatus(student)}
+                                            >
+                                                <EditIcon size={14} /> Ubah Kehadiran
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            {students.filter(s => s.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim())).length === 0 && (
+                                <tr>
+                                    <td colSpan={4} style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--color-text-muted)' }}>
+                                        Tidak ditemukan mahasiswa dengan nama "{studentSearchQuery}"
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
