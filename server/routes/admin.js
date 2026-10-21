@@ -143,7 +143,7 @@ router.get('/export/excel', authenticateToken, requireAdmin, (req, res) => {
             `NIP: ${courseInfo.lecturer_nip || '-'}`
         ]);
         data.push([
-            `Jadwal Perkuliahan: ${courseInfo.schedule_day || 'Kamis'}, ${courseInfo.schedule_time || '08:00 - 09:40 WIB'}`,
+            `Jadwal Perkuliahan: ${courseInfo.schedule_day || 'Kamis'}, ${(!courseInfo.schedule_time || courseInfo.schedule_time.includes('08:00')) ? '13:00 - 15:30 WIB' : courseInfo.schedule_time}`,
             '',
             `Ruang: ${courseInfo.room || 'Ruang Kuliah'}`
         ]);

@@ -89,7 +89,7 @@ router.post('/create', authenticateToken, requireAdmin, (req, res) => {
             title.trim(),
             description ? description.trim() : null,
             event_date,
-            event_time || '08:00',
+            event_time || '13:00',
             event_type || 'kuliah',
             loc || 'Kampus / Tatap Muka',
             roomVal,
@@ -104,7 +104,7 @@ router.post('/create', authenticateToken, requireAdmin, (req, res) => {
         );
 
         const typeLabel = event_type === 'ujian' ? 'Ujian / Quiz' : event_type === 'tugas' ? 'Tugas' : 'Perkuliahan';
-        const notifMsg = `Ada agenda ${typeLabel} "${title}" pada tanggal ${event_date} pukul ${event_time || '08:00 WIB'}${loc ? ' di ' + loc : ''}.`;
+        const notifMsg = `Ada agenda ${typeLabel} "${title}" pada tanggal ${event_date} pukul ${event_time || '13:00 WIB'}${loc ? ' di ' + loc : ''}.`;
 
         users.forEach(u => {
             insertNotif.run(u.id, `Agenda Kalender Baru: ${title}`, notifMsg, 'reminder', req.user.id);

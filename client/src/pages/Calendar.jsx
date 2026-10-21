@@ -29,7 +29,7 @@ export function Calendar() {
     const [eventTitle, setEventTitle] = useState('');
     const [eventDescription, setEventDescription] = useState('');
     const [eventDate, setEventDate] = useState('');
-    const [eventTime, setEventTime] = useState('08:00');
+    const [eventTime, setEventTime] = useState('13:00');
     const [eventType, setEventType] = useState('kuliah'); // 'kuliah', 'tugas', 'ujian', 'libur'
     const [eventRoom, setEventRoom] = useState('');
     const [eventBuilding, setEventBuilding] = useState('');
@@ -346,7 +346,7 @@ export function Calendar() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <ClockIcon size={14} />
-                                                <span>{evt.event_time || '08:00 WIB'}</span>
+                                                <span>{(!evt.event_time || evt.event_time.includes('08:00')) ? '13:00 - 15:30 WIB' : evt.event_time}</span>
                                             </div>
                                             {evt.room && evt.room !== '-' && (
                                                 <span>Ruang: <strong>{evt.room}</strong></span>
@@ -398,7 +398,7 @@ export function Calendar() {
                                         {renderEventTypeBadge(evt.event_type)}
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '6px' }}>
-                                        <span>{evt.event_time || '08:00 WIB'}</span>
+                                        <span>{(!evt.event_time || evt.event_time.includes('08:00')) ? '13:00 - 15:30 WIB' : evt.event_time}</span>
                                         {evt.room && evt.room !== '-' && <span>Ruang: <strong>{evt.room}</strong></span>}
                                         {evt.building && evt.building !== '-' && <span>Gedung: <strong>{evt.building}</strong></span>}
                                         {evt.location && (!evt.room || evt.room === '-') && <span>Lokasi: {evt.location}</span>}
@@ -456,7 +456,7 @@ export function Calendar() {
                                 id="eventTimeInput"
                                 type="text"
                                 className="form-input"
-                                placeholder="Contoh: 08:00 - 09:40 WIB"
+                                placeholder="Contoh: 13:00 - 15:30 WIB"
                                 value={eventTime}
                                 onChange={(e) => setEventTime(e.target.value)}
                             />

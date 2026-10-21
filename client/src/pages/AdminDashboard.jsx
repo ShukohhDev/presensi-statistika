@@ -1463,6 +1463,7 @@ PJ MK Statistika Kelas TI25C`;
                                 id="scheduleTime"
                                 type="text"
                                 className="form-input"
+                                placeholder="Contoh: 13:00 - 15:30 WIB"
                                 value={courseInfo.schedule_time || ''}
                                 onChange={(e) => setCourseInfo({ ...courseInfo, schedule_time: e.target.value })}
                                 required

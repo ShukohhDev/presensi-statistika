@@ -158,7 +158,7 @@ export function Attendance() {
         return {
             type: 'other_day',
             title: 'Sesi Presensi Belum Dibuka',
-            desc: `Jadwal perkuliahan Statistika berikutnya adalah hari ${scheduledDay}, pukul ${courseInfo?.schedule_time || '13:00 - 15:30 WIB'}.`
+            desc: `Jadwal perkuliahan Statistika berikutnya adalah hari ${scheduledDay}, pukul ${(!courseInfo?.schedule_time || courseInfo?.schedule_time.includes('08:00')) ? '13:00 - 15:30 WIB' : courseInfo.schedule_time}.`
         };
     };
 
@@ -339,7 +339,7 @@ export function Attendance() {
                             {courseInfo?.schedule_day || 'Kamis'}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            {courseInfo?.schedule_time || '13:00 - 15:30 WIB'}
+                            {(!courseInfo?.schedule_time || courseInfo?.schedule_time.includes('08:00')) ? '13:00 - 15:30 WIB' : courseInfo.schedule_time}
                         </div>
                     </div>
 

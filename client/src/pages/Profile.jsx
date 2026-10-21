@@ -591,7 +591,7 @@ export function Profile() {
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Hari & Jam Kuliah</td>
                                         <td>:</td>
-                                        <td>{courseInfo?.schedule_day || 'Kamis'}, {courseInfo?.schedule_time || '08:00 - 09:40 WIB'}</td>
+                                        <td>{courseInfo?.schedule_day || 'Kamis'}, {(!courseInfo?.schedule_time || courseInfo?.schedule_time.includes('08:00')) ? '13:00 - 15:30 WIB' : courseInfo.schedule_time}</td>
                                     </tr>
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Ruang Kuliah</td>
