@@ -133,7 +133,7 @@ async function checkSchedulerTick() {
 
         // 2. OTOMASI JAM 13:00 (Buka Sesi Presensi Otomatis)
         const autoOpenTime = course.auto_open_time || '13:00';
-        const autoCloseTime = course.auto_close_time || '15:30';
+        const autoCloseTime = course.auto_close_time || '15:45';
 
         if (
             isScheduledDay &&
@@ -155,7 +155,7 @@ async function checkSchedulerTick() {
                 const maxM = db.prepare('SELECT COALESCE(MAX(meeting_number), 0) as maxM FROM sessions').get().maxM;
                 const nextMeeting = maxM + 1;
 
-                // Hitung durasi dalam menit (default 150 menit dari 13:00 ke 15:30)
+                // Hitung durasi dalam menit (13:00 ke 15:45 = 165 menit, jadwal 13:00-15:30 + toleransi s.d 15:45)
                 const [startH, startM] = autoOpenTime.split(':').map(Number);
                 const [endH, endM] = autoCloseTime.split(':').map(Number);
                 const durationMinutes = Math.max(30, (endH * 60 + endM) - (startH * 60 + startM));
@@ -174,20 +174,20 @@ async function checkSchedulerTick() {
                     insertNotif.run(
                         s.id,
                         'Sesi Presensi Dibuka Otomatis',
-                        `Sesi presensi untuk Pertemuan ${nextMeeting} telah dibuka secara otomatis. Akses presensi dibuka hingga pukul ${autoCloseTime} WIB.`
+                        `Sesi presensi untuk Pertemuan ${nextMeeting} telah dibuka secara otomatis (Jadwal kuliah 13:00 - 15:30 WIB). Toleransi keterlambatan presensi dibuka hingga pukul ${autoCloseTime} WIB.`
                     );
                 });
 
                 // Catat log aktivitas
                 db.prepare(
                     'INSERT INTO activity_log (user_id, action, description) VALUES (1, ?, ?)'
-                ).run('buka_sesi_otomatis', `Sesi presensi pertemuan ${nextMeeting} dibuka otomatis oleh sistem (${autoOpenTime} WIB)`);
+                ).run('buka_sesi_otomatis', `Sesi presensi pertemuan ${nextMeeting} dibuka otomatis oleh sistem (${autoOpenTime} WIB, toleransi s.d ${autoCloseTime} WIB)`);
 
                 console.log(`[Scheduler] Sesi presensi pertemuan ${nextMeeting} berhasil dibuka otomatis.`);
             }
         }
 
-        // 3. OTOMASI JAM 15:30 (Tutup Sesi Presensi Otomatis & Hitung Alpha)
+        // 3. OTOMASI JAM 15:45 (Tutup Sesi Presensi Otomatis & Hitung Alpha setelah Batas Toleransi)
         const openSession = db.prepare("SELECT * FROM sessions WHERE status = 'open'").get();
         if (openSession) {
             let shouldClose = false;
@@ -273,7 +273,7 @@ function getSchedulerStatus() {
         autoSessionEnabled: Boolean(course.auto_session_enabled),
         skipNextSession: Boolean(course.skip_next_session),
         autoOpenTime: course.auto_open_time || '13:00',
-        autoCloseTime: course.auto_close_time || '15:30',
+        autoCloseTime: course.auto_close_time || '15:45',
         toleranceMinutes: course.tolerance_minutes || 30,
         activeSession: openSession || null,
         nextMeetingNumber: maxM + 1

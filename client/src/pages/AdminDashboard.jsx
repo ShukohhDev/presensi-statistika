@@ -71,7 +71,10 @@ export function AdminDashboard() {
         lecturer_phone: '081282394648',
         lecturer_email: '',
         schedule_day: 'Kamis',
-        schedule_time: '08:00 - 09:40 WIB',
+        schedule_time: '13:00 - 15:30 WIB',
+        auto_open_time: '13:00',
+        auto_close_time: '15:45',
+        tolerance_minutes: 30,
         room: 'Ruang Teori Gedung Kuliah',
         whatsapp_group_link: 'https://chat.whatsapp.com/sample-statistika-ti25c',
         pj_whatsapp_phone: ''
@@ -331,12 +334,13 @@ export function AdminDashboard() {
                 `Selamat pagi rekan-rekan mahasiswa TI25C!\n` +
                 `Hari ini *${courseInfo.schedule_day || 'Kamis'}*, perkuliahan Statistika akan dilaksanakan dengan rincian sbb:\n\n` +
                 `*Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'}\n` +
-                `*Waktu:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
+                `*Waktu Perkuliahan:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
                 `*Ruang:* ${courseInfo.room || 'Ruang Teori Gedung Kuliah'}\n` +
                 `*Agenda:* Pertemuan ke-${meetingNum}\n\n` +
                 `*Ketentuan Presensi Portal:*\n` +
-                `• Akses absensi dibuka otomatis tepat pukul *13:00 WIB* dan ditutup tepat pukul *15:30 WIB*.\n` +
-                `• Toleransi keterlambatan: *${courseInfo.tolerance_minutes || 30} menit* (Presensi setelah 13:30 WIB otomatis bertanda *Terlambat*).\n` +
+                `• Akses absensi dibuka otomatis tepat pukul *13:00 WIB* (Waktu kuliah: 13:00 - 15:30 WIB).\n` +
+                `• Toleransi keterlambatan diberikan hingga pukul *15:45 WIB* (Presensi setelah 13:30 WIB otomatis bertanda *Terlambat*).\n` +
+                `• Sesi otomatis DITUTUP tepat pukul *15:45 WIB* (Mahasiswa yang belum absen otomatis dihitung Alpha).\n` +
                 `• Portal Presensi: ${window.location.origin}/attendance\n\n` +
                 `Dimohon untuk hadir tepat waktu di kelas dan mempersiapkan diri. Terima kasih.\n\n` +
                 `- *PJ MK Statistika Kelas TI25C*`;
@@ -620,7 +624,7 @@ PJ MK Statistika Kelas TI25C`;
                                 {autoSessionEnabled ? 'Jadwal Otomatis Aktif' : 'Mode Manual Saja'}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                                {autoSessionEnabled ? 'Buka 13:00 • Tutup 15:30 WIB' : 'Hanya dibuka lewat tombol admin'}
+                                {autoSessionEnabled ? 'Buka 13:00 • Ditutup 15:45 WIB (Toleransi)' : 'Hanya dibuka lewat tombol admin'}
                             </div>
                         </div>
 
@@ -671,9 +675,9 @@ PJ MK Statistika Kelas TI25C`;
                         </div>
                         <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.813rem', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
                             <li><strong>Kamis 00:00 WIB:</strong> Agenda perkuliahan otomatis dibuat di Kalender & notifikasi sistem terbit.</li>
-                            <li><strong>Kamis 13:00 WIB:</strong> Sesi presensi otomatis <strong>DIBUKA</strong> selama 150 menit.</li>
-                            <li><strong>Kamis 15:30 WIB:</strong> Sesi otomatis <strong>DITUTUP</strong> (Mahasiswa belum absen otomatis Alpha).</li>
-                            <li><strong>Toleransi Keterlambatan:</strong> {courseInfo.tolerance_minutes || 30} menit (Absen {'>'} 13:30 bertanda <em>[Terlambat]</em>).</li>
+                            <li><strong>Kamis 13:00 WIB:</strong> Sesi presensi otomatis <strong>DIBUKA</strong> (Waktu perkuliahan 13:00 - 15:30 WIB).</li>
+                            <li><strong>Toleransi Keterlambatan:</strong> Mahasiswa diberi toleransi presensi hingga pukul <strong>15:45 WIB</strong> (Absen {'>'} 13:30 bertanda <em>[Terlambat]</em>).</li>
+                            <li><strong>Kamis 15:45 WIB:</strong> Sesi otomatis <strong>DITUTUP</strong> (Mahasiswa belum absen otomatis Alpha setelah masa toleransi habis).</li>
                         </ul>
                     </div>
 
@@ -1380,13 +1384,13 @@ PJ MK Statistika Kelas TI25C`;
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label" htmlFor="autoCloseTime">Jam Tutup Otomatis</label>
+                            <label className="form-label" htmlFor="autoCloseTime">Jam Tutup Otomatis (Toleransi Akhir)</label>
                             <input
                                 id="autoCloseTime"
                                 type="text"
                                 className="form-input"
-                                placeholder="15:30"
-                                value={courseInfo.auto_close_time || '15:30'}
+                                placeholder="15:45"
+                                value={courseInfo.auto_close_time || '15:45'}
                                 onChange={(e) => setCourseInfo({ ...courseInfo, auto_close_time: e.target.value })}
                             />
                         </div>

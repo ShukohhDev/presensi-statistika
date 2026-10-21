@@ -339,7 +339,7 @@ export function Attendance() {
                             {courseInfo?.schedule_day || 'Kamis'}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            {courseInfo?.schedule_time || '08:00 - 09:40 WIB'}
+                            {courseInfo?.schedule_time || '13:00 - 15:30 WIB'}
                         </div>
                     </div>
 
