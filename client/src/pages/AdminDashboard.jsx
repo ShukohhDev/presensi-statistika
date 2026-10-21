@@ -389,32 +389,32 @@ export function AdminDashboard() {
         const hadir = student.counts?.hadir || 0;
         const totalHeld = sessions.length;
         const remaining = Math.max(0, 16 - totalHeld);
-        const needed = Math.max(0, 7 - hadir);
+        const needed = Math.max(0, 8 - hadir);
         const maxPossible = hadir + remaining;
-        const safetyBuffer = maxPossible - 7;
+        const safetyBuffer = maxPossible - 8;
 
         let statusText = 'AMAN';
-        if (hadir >= 7) {
+        if (hadir >= 8) {
             statusText = 'SUDAH MEMENUHI SYARAT (AMAN)';
-        } else if (maxPossible < 7) {
-            statusText = 'KRITIS (TIDAK MEMENUHI SYARAT 40%)';
+        } else if (maxPossible < 8) {
+            statusText = 'KRITIS (TIDAK MEMENUHI SYARAT 45%)';
         } else if (safetyBuffer <= 1) {
             statusText = 'WASPADA (BATAS RAWAN)';
         } else {
             statusText = 'AMAN TERKENDALI';
         }
 
-        const text = `*PEMBERITAHUAN SIMULASI KELAYAKAN UAS STATISTIKA TI25C*
+        const text = `*PEMBERITAHUAN SIMULASI KELAYAKAN UTS & UAS STATISTIKA TI25C*
 Nama Mahasiswa: ${student.name}
 Kehadiran Saat Ini: ${hadir} dari ${totalHeld} pertemuan terlaksana
-Syarat Minimal Kelayakan UAS (40%): 7 pertemuan
+Syarat Minimal Kelayakan UTS & UAS (45%): 8 pertemuan (UAS) / 4 pertemuan (UTS)
 Sisa Pertemuan Semester: ${remaining} pertemuan
 Kebutuhan Kehadiran: Minimal ${needed} pertemuan lagi
 Jatah Absen Aman: ${safetyBuffer >= 0 ? safetyBuffer + ' kali' : 'Tidak ada (Sudah melewati batas)'}
 Status Prediksi: ${statusText}
 
 Catatan:
-Mahasiswa wajib memenuhi kehadiran minimal 40% (7 pertemuan) untuk dapat mengikuti Ujian Akhir Semester (UAS) Statistika. Mohon maksimalkan kehadiran pada pertemuan berikutnya.
+Mahasiswa wajib memenuhi kehadiran minimal 45% (8 pertemuan untuk UAS, atau 4 pertemuan untuk UTS) untuk dapat mengikuti Ujian Tengah/Akhir Semester Statistika. Mohon maksimalkan kehadiran pada pertemuan berikutnya.
 
 Penanggung Jawab Mata Kuliah:
 PJ MK Statistika Kelas TI25C`;
@@ -507,9 +507,9 @@ PJ MK Statistika Kelas TI25C`;
                         type="button"
                         className="btn btn-secondary btn-sm"
                         onClick={handleOpenSimulator}
-                        title="Kalkulator Simulasi Kelayakan UAS Mahasiswa (Syarat Minimal 40%)"
+                        title="Kalkulator Simulasi Kelayakan UTS & UAS Mahasiswa (Syarat Minimal 45%)"
                     >
-                        <CalculatorIcon size={16} /> Simulator UAS
+                        <CalculatorIcon size={16} /> Simulator UTS &amp; UAS
                     </button>
                     <button
                         type="button"
@@ -1580,7 +1580,7 @@ PJ MK Statistika Kelas TI25C`;
             <Modal
                 isOpen={simulatorModalOpen}
                 onClose={() => setSimulatorModalOpen(false)}
-                title="Simulator Kelayakan UAS Mahasiswa (Syarat Minimal 40%)"
+                title="Simulator Kelayakan UTS & UAS Mahasiswa (Syarat Minimal 45%)"
                 icon={<CalculatorIcon size={18} />}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1593,7 +1593,7 @@ PJ MK Statistika Kelas TI25C`;
                             </div>
                             <div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Syarat Minimal Hadir</div>
-                                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-primary)' }}>40% (7 Pertemuan)</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-primary)' }}>45% (8 Sesi UAS / 4 UTS)</div>
                             </div>
                             <div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Pertemuan Berjalan</div>
@@ -1639,22 +1639,22 @@ PJ MK Statistika Kelas TI25C`;
                             const hadir = targetStudent.counts?.hadir || 0;
                             const totalHeld = sessions.length;
                             const remaining = Math.max(0, 16 - totalHeld);
-                            const needed = Math.max(0, 7 - hadir);
+                            const needed = Math.max(0, 8 - hadir);
                             const maxPossible = hadir + remaining;
-                            const safetyBuffer = maxPossible - 7;
+                            const safetyBuffer = maxPossible - 8;
 
                             let statusLabel = 'AMAN';
                             let badgeClass = 'badge-hadir';
                             let description = '';
 
-                            if (hadir >= 7) {
+                            if (hadir >= 8) {
                                 statusLabel = 'SUDAH MEMENUHI SYARAT (AMAN)';
                                 badgeClass = 'badge-hadir';
-                                description = `Mahasiswa telah mengumpulkan ${hadir} kehadiran dari batas minimal 7 pertemuan. Status kepesertaan UAS sudah aman.`;
-                            } else if (maxPossible < 7) {
-                                statusLabel = 'TIDAK LAYAK UAS (KRITIS)';
+                                description = `Mahasiswa telah mengumpulkan ${hadir} kehadiran dari batas minimal 8 pertemuan UAS (atau 4 pertemuan UTS). Status kepesertaan ujian sudah aman.`;
+                            } else if (maxPossible < 8) {
+                                statusLabel = 'TIDAK LAYAK UTS/UAS (KRITIS)';
                                 badgeClass = 'badge-alpha';
-                                description = `Kehadiran maksimal yang dapat dicapai (${maxPossible} kali) berada di bawah syarat batas 40% (7 kali).`;
+                                description = `Kehadiran maksimal yang dapat dicapai (${maxPossible} kali) berada di bawah syarat batas 45% (8 kali untuk UAS).`;
                             } else if (safetyBuffer <= 1) {
                                 statusLabel = 'BATAS KRITIS (WASPADA)';
                                 badgeClass = 'badge-izin';
@@ -1684,7 +1684,7 @@ PJ MK Statistika Kelas TI25C`;
                                         </div>
                                         <div style={{ padding: '10px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-sm)' }}>
                                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Target Minimal</div>
-                                            <div style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-primary)' }}>7 kali (40%)</div>
+                                            <div style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-primary)' }}>8 kali (45%)</div>
                                         </div>
                                         <div style={{ padding: '10px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-sm)' }}>
                                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Kebutuhan Hadir</div>
@@ -1735,17 +1735,17 @@ PJ MK Statistika Kelas TI25C`;
                                         const hadir = s.counts?.hadir || 0;
                                         const totalHeld = sessions.length;
                                         const remaining = Math.max(0, 16 - totalHeld);
-                                        const needed = Math.max(0, 7 - hadir);
+                                        const needed = Math.max(0, 8 - hadir);
                                         const maxPossible = hadir + remaining;
-                                        const safetyBuffer = maxPossible - 7;
+                                        const safetyBuffer = maxPossible - 8;
 
                                         let badgeClass = 'badge-hadir';
                                         let statusText = 'Aman';
 
-                                        if (hadir >= 7) {
+                                        if (hadir >= 8) {
                                             badgeClass = 'badge-hadir';
-                                            statusText = 'Lolos 40%';
-                                        } else if (maxPossible < 7) {
+                                            statusText = 'Lolos 45%';
+                                        } else if (maxPossible < 8) {
                                             badgeClass = 'badge-alpha';
                                             statusText = 'Tidak Layak';
                                         } else if (safetyBuffer <= 1) {

@@ -187,9 +187,9 @@ router.get('/export/excel', authenticateToken, requireAdmin, (req, res) => {
             const percentage = `${percentNum}%`;
             const uasStatus = percentNum >= 75
                 ? 'MEMENUHI SYARAT'
-                : percentNum >= 40
+                : percentNum >= 45
                 ? 'WASPADAI KEHADIRAN'
-                : 'TIDAK MEMENUHI (< 40%)';
+                : 'TIDAK MEMENUHI (< 45%)';
 
             row.push(hadir, izin, sakit, alpha, sessions.length, percentage, uasStatus);
             data.push(row);

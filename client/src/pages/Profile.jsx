@@ -385,7 +385,7 @@ export function Profile() {
                                         </div>
                                     </div>
 
-                                    {/* Status Evaluasi Syarat UAS (Minimal 40%) */}
+                                    {/* Status Evaluasi Syarat UTS & UAS (Minimal 45%) */}
                                     <div style={{
                                         marginTop: '16px',
                                         padding: '12px 14px',
@@ -394,22 +394,22 @@ export function Profile() {
                                         border: '1px solid var(--color-border)'
                                     }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                            <span style={{ fontSize: '0.813rem', fontWeight: 600 }}>Status Syarat UAS</span>
-                                            {summary.percentage >= 40 ? (
-                                                <span className="badge-status badge-hadir">Memenuhi Syarat (&gt;= 40%)</span>
+                                            <span style={{ fontSize: '0.813rem', fontWeight: 600 }}>Status Syarat UTS &amp; UAS</span>
+                                            {summary.percentage >= 45 ? (
+                                                <span className="badge-status badge-hadir">Memenuhi Syarat (&gt;= 45%)</span>
                                             ) : (
-                                                <span className="badge-status badge-alpha">Kritis: Di Bawah 40%</span>
+                                                <span className="badge-status badge-alpha">Kritis: Di Bawah 45%</span>
                                             )}
                                         </div>
                                         <p style={{
                                             fontSize: '0.75rem',
-                                            color: summary.percentage >= 40 ? 'var(--color-text-secondary)' : 'var(--color-danger)',
+                                            color: summary.percentage >= 45 ? 'var(--color-text-secondary)' : 'var(--color-danger)',
                                             margin: 0,
                                             lineHeight: '1.4'
                                         }}>
-                                            {summary.percentage >= 40
-                                                ? 'Tingkat kehadiran Anda memenuhi batas minimal 40% untuk berhak mengikuti Ujian Akhir Semester.'
-                                                : 'Peringatan: Kehadiran Anda saat ini berada di bawah batas minimal 40%. Segera koordinasikan dengan PJ MK.'}
+                                            {summary.percentage >= 45
+                                                ? 'Tingkat kehadiran Anda memenuhi batas minimal 45% untuk berhak mengikuti Ujian Tengah Semester (UTS) & Ujian Akhir Semester (UAS).'
+                                                : 'Peringatan: Kehadiran Anda saat ini berada di bawah batas minimal 45%. Segera koordinasikan dengan PJ MK.'}
                                         </p>
                                     </div>
 
@@ -631,12 +631,12 @@ export function Profile() {
                                 fontSize: '0.813rem'
                             }}>
                                 <div style={{ fontWeight: 700 }}>
-                                    STATUS KELAYAKAN UAS: {summary.percentage >= 40 ? 'MEMENUHI SYARAT (>= 40%)' : 'TIDAK MEMENUHI SYARAT (< 40%)'}
+                                    STATUS KELAYAKAN UTS & UAS: {summary.percentage >= 45 ? 'MEMENUHI SYARAT (>= 45%)' : 'TIDAK MEMENUHI SYARAT (< 45%)'}
                                 </div>
                                 <div style={{ fontSize: '0.75rem', marginTop: '2px' }}>
-                                    {summary.percentage >= 40
-                                        ? 'Mahasiswa bersangkutan dinyatakan berhak mengikuti Ujian Akhir Semester (UAS).'
-                                        : 'Mahasiswa bersangkutan berada di bawah batas minimum kehadiran 40%.'}
+                                    {summary.percentage >= 45
+                                        ? 'Mahasiswa bersangkutan dinyatakan berhak mengikuti Ujian Tengah Semester (UTS) & Ujian Akhir Semester (UAS).'
+                                        : 'Mahasiswa bersangkutan berada di bawah batas minimum kehadiran 45%.'}
                                 </div>
                             </div>
 

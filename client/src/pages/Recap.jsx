@@ -78,8 +78,8 @@ export function Recap() {
                 `*Mata Kuliah:* Statistika dan Probabilitas`,
                 `*Total Sesi Pertemuan:* ${sessions.length} Pertemuan`,
                 `*Rata-rata Kehadiran Kelas:* ${averagePercentage}%`,
-                `*Lolos Syarat UAS (>= 40%):* ${totalAman + totalWaspada} Mahasiswa`,
-                `*Kritis (< 40%):* ${totalKritis} Mahasiswa`,
+                `*Lolos Syarat UTS & UAS (>= 45%):* ${totalAman + totalWaspada} Mahasiswa`,
+                `*Kritis (< 45%):* ${totalKritis} Mahasiswa`,
                 ``,
                 `*Daftar Status Kehadiran Mahasiswa:*`
             ];
@@ -103,27 +103,27 @@ export function Recap() {
     };
 
     const getUASStatus = (percentage) => {
-        if (percentage < 40) {
+        if (percentage < 45) {
             return {
                 type: 'kritis',
-                label: 'Kritis (< 40%)',
+                label: 'Kritis (< 45%)',
                 badgeClass: 'badge-alpha',
-                desc: 'Tidak memenuhi syarat UAS'
+                desc: 'Tidak memenuhi syarat UTS & UAS'
             };
         }
-        if (percentage < 55) {
+        if (percentage < 60) {
             return {
                 type: 'waspada',
-                label: 'Waspada (40-54%)',
+                label: 'Waspada (45-59%)',
                 badgeClass: 'badge-warning',
-                desc: 'Mendekati batas minimal 40%'
+                desc: 'Mendekati batas minimal 45%'
             };
         }
         return {
             type: 'aman',
-            label: 'Aman (>= 55%)',
+            label: 'Aman (>= 60%)',
             badgeClass: 'badge-hadir',
-            desc: 'Memenuhi syarat UAS'
+            desc: 'Memenuhi syarat UTS & UAS'
         };
     };
 
@@ -148,9 +148,9 @@ export function Recap() {
         });
 
     // Counts for stats (Admin view)
-    const totalAman = recapData.filter(i => (i.percentage || 0) >= 55).length;
-    const totalWaspada = recapData.filter(i => (i.percentage || 0) >= 40 && (i.percentage || 0) < 55).length;
-    const totalKritis = recapData.filter(i => (i.percentage || 0) < 40).length;
+    const totalAman = recapData.filter(i => (i.percentage || 0) >= 60).length;
+    const totalWaspada = recapData.filter(i => (i.percentage || 0) >= 45 && (i.percentage || 0) < 60).length;
+    const totalKritis = recapData.filter(i => (i.percentage || 0) < 45).length;
 
     // Calculate class average
     const averagePercentage =
@@ -187,7 +187,7 @@ export function Recap() {
                     <h1 className="page-title">{isAdmin ? 'Rekapitulasi Kehadiran Kelas' : 'Rekapitulasi Kehadiran Pribadi'}</h1>
                     <p className="page-subtitle">
                         {isAdmin
-                            ? 'Daftar kehadiran seluruh mahasiswa Mata Kuliah Statistika - Kelas TI25C dengan evaluasi syarat minimal UAS (40%)'
+                            ? 'Daftar kehadiran seluruh mahasiswa Mata Kuliah Statistika - Kelas TI25C dengan evaluasi syarat minimal UTS & UAS (45%)'
                             : `Rekapitulasi resmi kehadiran perkuliahan untuk ${user?.name || 'Mahasiswa'}. Sesuai kebijakan privasi kelas, hanya data kehadiran Anda yang ditampilkan.`}
                     </p>
                 </div>
@@ -251,7 +251,7 @@ export function Recap() {
                                 Ekspor Rekapitulasi Kehadiran Mahasiswa
                             </h3>
                             <p style={{ margin: '4px 0 0 0', fontSize: '0.813rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                                Berkas Excel (.xlsx) diformat khusus untuk diserahkan ke Dosen Pengampu, mencakup kop akademik resmi, data pertemuan P1 s/d P{sessions.length || 'n'}, total H/I/S/A, persentase kehadiran, dan status syarat kelayakan UAS (&gt;= 40%).
+                                Berkas Excel (.xlsx) diformat khusus untuk diserahkan ke Dosen Pengampu, mencakup kop akademik resmi, data pertemuan P1 s/d P{sessions.length || 'n'}, total H/I/S/A, persentase kehadiran, dan status syarat kelayakan UTS & UAS (&gt;= 45%).
                             </p>
                         </div>
                         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -319,7 +319,7 @@ export function Recap() {
                         </div>
                         <div className="stat-info">
                             <h3>{totalAman + totalWaspada}</h3>
-                            <p>Lolos Syarat UAS (&gt;= 40%)</p>
+                            <p>Lolos Syarat UTS & UAS (&gt;= 45%)</p>
                         </div>
                     </div>
 
@@ -329,7 +329,7 @@ export function Recap() {
                         </div>
                         <div className="stat-info">
                             <h3>{totalWaspada}</h3>
-                            <p>Waspada (40% - 54%)</p>
+                            <p>Waspada (45% - 59%)</p>
                         </div>
                     </div>
 
@@ -339,7 +339,7 @@ export function Recap() {
                         </div>
                         <div className="stat-info">
                             <h3 style={{ color: 'var(--color-danger)' }}>{totalKritis}</h3>
-                            <p>Kritis / Tidak Lolos (&lt; 40%)</p>
+                            <p>Kritis / Tidak Lolos (&lt; 45%)</p>
                         </div>
                     </div>
                 </div>
@@ -389,21 +389,21 @@ export function Recap() {
                 </div>
             )}
 
-            {/* Visual Milestone UAS 40% Progress Tracker (Tingkat Kematangan UX 9.8) */}
+            {/* Visual Milestone UTS & UAS 45% Progress Tracker (Tingkat Kematangan UX 9.8) */}
             {!isAdmin && studentItem && (
                 <div className="uas-progress-container">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                 <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>
-                                    Simulator &amp; Status Kelayakan UAS (Batas Minimal 40%)
+                                    Simulator &amp; Status Kelayakan UTS &amp; UAS (Batas Minimal 45%)
                                 </h3>
                                 <span className={`badge-status ${getUASStatus(studentItem.percentage || 0).badgeClass}`}>
                                     {getUASStatus(studentItem.percentage || 0).label}
                                 </span>
                             </div>
                             <p style={{ margin: '4px 0 0 0', fontSize: '0.813rem', color: 'var(--color-text-secondary)' }}>
-                                Syarat mutlak mengikuti UAS Mata Kuliah Statistika adalah minimal 40% kehadiran (minimal 7 dari 16 pertemuan)
+                                Syarat mutlak mengikuti UTS &amp; UAS Statistika adalah minimal 45% kehadiran (minimal 4 dari 8 sesi UTS, 8 dari 16 pertemuan UAS)
                             </p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -416,13 +416,13 @@ export function Recap() {
                         </div>
                     </div>
 
-                    {/* Bar Visual dengan Penanda Batas Merah 40% */}
+                    {/* Bar Visual dengan Penanda Batas Merah 45% */}
                     <div className="uas-bar-outer">
                         <div className="uas-milestone-marker" />
-                        <div className="uas-milestone-label">Batas 40% (7 Sesi)</div>
+                        <div className="uas-milestone-label">Batas 45% (8 Sesi UAS / 4 Sesi UTS)</div>
                         <div
                             className={`uas-bar-inner ${
-                                (studentItem.percentage || 0) >= 55 ? 'success' : (studentItem.percentage || 0) >= 40 ? 'warning' : 'danger'
+                                (studentItem.percentage || 0) >= 60 ? 'success' : (studentItem.percentage || 0) >= 45 ? 'warning' : 'danger'
                             }`}
                             style={{ width: `${Math.min(100, Math.max(4, studentItem.percentage || 0))}%` }}
                         />
@@ -430,18 +430,18 @@ export function Recap() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', fontSize: '0.813rem', color: 'var(--color-text-secondary)' }}>
                         <div>
-                            {(studentItem.counts?.hadir || 0) >= 7 ? (
+                            {(studentItem.counts?.hadir || 0) >= 8 ? (
                                 <span style={{ color: 'var(--color-status-hadir)', fontWeight: 600 }}>
-                                    Status Aman: Kehadiran Anda telah melampaui batas minimal 40% (siap mengikuti UAS).
+                                    Status Aman: Kehadiran Anda telah melampaui batas minimal 45% (siap mengikuti UTS &amp; UAS).
                                 </span>
                             ) : (
                                 <span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>
-                                    Perhatian: Anda butuh hadir di minimal {7 - (studentItem.counts?.hadir || 0)} sesi perkuliahan lagi untuk mengamankan syarat UAS.
+                                    Perhatian: Anda butuh hadir di minimal {Math.max(0, 8 - (studentItem.counts?.hadir || 0))} sesi lagi untuk batas 45% UAS (atau {Math.max(0, 4 - (studentItem.counts?.hadir || 0))} sesi lagi untuk UTS).
                                 </span>
                             )}
                         </div>
                         <div style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                            Target: 7 Sesi | Tercapai: {studentItem.counts?.hadir || 0} Sesi
+                            Target: 8 Sesi (UAS) / 4 Sesi (UTS) | Tercapai: {studentItem.counts?.hadir || 0} Sesi
                         </div>
                     </div>
                 </div>
@@ -511,7 +511,7 @@ export function Recap() {
                                     onClick={() => setStatusFilter('kritis')}
                                     style={{ padding: '4px 10px', fontSize: '0.75rem', color: statusFilter === 'kritis' ? '#ffffff' : 'var(--color-danger)' }}
                                 >
-                                    Kritis &lt; 40% ({totalKritis})
+                                    Kritis &lt; 45% ({totalKritis})
                                 </button>
                             </div>
                         )}
@@ -587,7 +587,7 @@ export function Recap() {
                                 <th style={{ textAlign: 'center' }}>Sakit</th>
                                 <th style={{ textAlign: 'center' }}>Alpha</th>
                                 <th style={{ textAlign: 'center' }}>Persentase</th>
-                                <th style={{ textAlign: 'center' }}>Status Syarat UAS (Min 40%)</th>
+                                <th style={{ textAlign: 'center' }}>Status Syarat UTS &amp; UAS (Min 45%)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -669,7 +669,7 @@ export function Recap() {
                                         </td>
                                         <td style={{ textAlign: 'center' }}>
                                             <span className={`badge-status ${uas.badgeClass}`} style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
-                                                {uas.type === 'kritis' ? '< 40%' : uas.type === 'waspada' ? 'Waspada' : 'Lolos'}
+                                                {uas.type === 'kritis' ? '< 45%' : uas.type === 'waspada' ? 'Waspada' : 'Lolos'}
                                             </span>
                                         </td>
                                     </tr>

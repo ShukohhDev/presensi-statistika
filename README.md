@@ -16,7 +16,7 @@ Tautan Resmi: [https://presensi-statistika-ti25c-production.up.railway.app](http
 2. **Dashboard Khusus Admin**
    - Pembukaan dan penutupan sesi presensi secara berkala.
    - Rekapitulasi matriks kehadiran seluruh mahasiswa dari pertemuan 1 hingga 16.
-   - Fitur Simulator Kelayakan UAS: Kalkulasi otomatis syarat minimal kehadiran 40% (minimal 7 dari 16 pertemuan) untuk menentukan kelayakan mahasiswa mengikuti Ujian Akhir Semester.
+   - Fitur Simulator Kelayakan UTS & UAS: Kalkulasi otomatis syarat minimal kehadiran 45% (minimal 4 dari 8 sesi UTS, 8 dari 16 pertemuan UAS) untuk menentukan kelayakan mahasiswa mengikuti Ujian Tengah/Akhir Semester.
    - Pratinjau bukti foto izin dan sakit mahasiswa langsung dari panel kendali.
 
 3. **Bank Materi dan Dataset Praktikum**

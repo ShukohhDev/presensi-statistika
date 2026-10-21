@@ -2864,7 +2864,7 @@ input:focus, textarea:focus, select:focus {
   border-radius: var(--radius-control);
 }
 
-/* ---- Visual UAS Milestone Progress Bar (Target 40% / 7 Sesi) ---- */
+/* ---- Visual UTS & UAS Milestone Progress Bar (Target 45% / 8 Sesi UAS / 4 Sesi UTS) ---- */
 .uas-progress-container {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -2903,7 +2903,7 @@ input:focus, textarea:focus, select:focus {
 
 .uas-milestone-marker {
   position: absolute;
-  left: 43.75%; /* 7 dari 16 pertemuan = 43.75% */
+  left: 45%; /* Batas minimal kehadiran UTS & UAS 45% */
   top: -8px;
   bottom: -8px;
   width: 2px;
@@ -2914,7 +2914,7 @@ input:focus, textarea:focus, select:focus {
 .uas-milestone-label {
   position: absolute;
   top: -24px;
-  left: 43.75%;
+  left: 45%;
   transform: translateX(-50%);
   background-color: #DC2626;
   color: #ffffff;
