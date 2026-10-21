@@ -140,12 +140,12 @@ router.get('/export/excel', authenticateToken, requireAdmin, (req, res) => {
         data.push([
             `Dosen Pengampu: ${courseInfo.lecturer_name || 'Dosen Pengampu'}`,
             '',
-            `NIP: ${courseInfo.lecturer_nip || '-'}`
+            `NIP: ${courseInfo.lecturer_nip || '0401088701'}`
         ]);
         data.push([
             `Jadwal Perkuliahan: ${courseInfo.schedule_day || 'Kamis'}, ${(!courseInfo.schedule_time || courseInfo.schedule_time.includes('08:00')) ? '13:00 - 15:30 WIB' : courseInfo.schedule_time}`,
             '',
-            `Ruang: ${courseInfo.room || 'Ruang Kuliah'}`
+            `Ruang: ${courseInfo.room || 'G. Mahdor R. C 306'}`
         ]);
         data.push([
             `Penanggung Jawab (PJ MK): PJ MK Statistika TI25C`,

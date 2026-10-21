@@ -346,7 +346,7 @@ export function AdminDashboard() {
             const text = `*PENGINGAT KULIAH & PRESENSI STATISTIKA TI25C*\n\n` +
                 `Selamat pagi rekan-rekan mahasiswa TI25C!\n` +
                 `Hari ini *${courseInfo.schedule_day || 'Kamis'}*, perkuliahan Statistika akan dilaksanakan dengan rincian sbb:\n\n` +
-                `*Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'}\n` +
+                `*Dosen Pengampu:* ${courseInfo.lecturer_name || 'RIFQI HIDAYAT'} (NIP: ${courseInfo.lecturer_nip || '0401088701'})\n` +
                 `*Waktu Perkuliahan:* ${courseInfo.schedule_time || '13:00 - 15:30 WIB'}\n` +
                 `*Ruang:* ${courseInfo.room || 'G. Mahdor R. C 306'}\n` +
                 `*Agenda:* Pertemuan ke-${meetingNum}\n\n` +
@@ -1408,7 +1408,7 @@ PJ MK Statistika Kelas TI25C`;
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="lecturerNip">NIP / NIDN Dosen</label>
+                        <label className="form-label" htmlFor="lecturerNip">NIP Dosen</label>
                         <input
                             id="lecturerNip"
                             type="text"

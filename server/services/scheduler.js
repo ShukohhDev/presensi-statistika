@@ -104,7 +104,7 @@ async function checkSchedulerTick() {
                          VALUES (?, ?, ?, ?, 'kuliah', 'G. Mahdor R. C 306', 'R. C 306', 'G. Mahdor', 1)`
                     ).run(
                         `Perkuliahan Statistika TI25C - Pertemuan ${nextMeeting}`,
-                        `Jadwal tatap muka perkuliahan Statistika jam 13:00 - 15:30 WIB di G. Mahdor R. C 306. Dosen Pengampu: ${course.lecturer_name || 'RIFQI HIDAYAT'}.`,
+                        `Jadwal tatap muka perkuliahan Statistika jam 13:00 - 15:30 WIB di G. Mahdor R. C 306. Dosen Pengampu: ${course.lecturer_name || 'RIFQI HIDAYAT'} (NIP: ${course.lecturer_nip || '0401088701'}).`,
                         wib.dateString,
                         '13:00'
                     );

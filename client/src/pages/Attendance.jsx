@@ -298,7 +298,7 @@ export function Attendance() {
                                 {courseInfo?.lecturer_name || 'RIFQI HIDAYAT'}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                                NIP / NIDN: {courseInfo?.lecturer_nip || '0401088701'}
+                                NIP: {courseInfo?.lecturer_nip || '0401088701'}
                             </div>
                         </div>
                         {(courseInfo?.lecturer_phone || '081282394648') && (

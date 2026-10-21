@@ -569,7 +569,7 @@ export function Profile() {
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Dosen Pengampu</td>
                                         <td>:</td>
-                                        <td>{courseInfo?.lecturer_name || 'RIFQI HIDAYAT'}{courseInfo?.lecturer_nip ? ` (NIDN: ${courseInfo.lecturer_nip})` : ''}</td>
+                                        <td>{courseInfo?.lecturer_name || 'RIFQI HIDAYAT'} (NIP: {courseInfo?.lecturer_nip || '0401088701'})</td>
                                     </tr>
                                     {(courseInfo?.lecturer_phone || '081282394648') && (
                                         <tr>
