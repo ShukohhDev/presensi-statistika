@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import { useToast } from '../contexts/ToastContext';
+import presensiSticker from '../assets/presensi-masuk-boskyuh.png';
 import {
     ChevronDownIcon,
     CheckCircleIcon,
@@ -28,6 +29,35 @@ export function Attendance() {
     const [note, setNote] = useState('');
     const [evidenceFile, setEvidenceFile] = useState(null);
     const [filePreviewUrl, setFilePreviewUrl] = useState(null);
+
+    // Pop-up Animasi Stiker Perayaan Presensi (WOKEE PRESENSI MASUK BOSKYUH)
+    const [showSuccessSticker, setShowSuccessSticker] = useState(false);
+    const [isClosingSticker, setIsClosingSticker] = useState(false);
+    const stickerTimerRef = useRef(null);
+
+    const closeSticker = useCallback(() => {
+        setIsClosingSticker(true);
+        setTimeout(() => {
+            setShowSuccessSticker(false);
+            setIsClosingSticker(false);
+        }, 250);
+    }, []);
+
+    const triggerSticker = useCallback(() => {
+        if (stickerTimerRef.current) clearTimeout(stickerTimerRef.current);
+        setIsClosingSticker(false);
+        setShowSuccessSticker(true);
+        // Otomatis menutup sebentar (~2.8 detik)
+        stickerTimerRef.current = setTimeout(() => {
+            closeSticker();
+        }, 2800);
+    }, [closeSticker]);
+
+    useEffect(() => {
+        return () => {
+            if (stickerTimerRef.current) clearTimeout(stickerTimerRef.current);
+        };
+    }, []);
 
     // Countdown timer
     const [timeLeft, setTimeLeft] = useState(null);
@@ -213,6 +243,7 @@ export function Attendance() {
             addToast('Presensi Anda berhasil dicatat.', 'success');
             removeFile();
             setNote('');
+            triggerSticker();
             await fetchSessionData();
         } catch (err) {
             addToast(err.message || 'Gagal mengirim presensi.', 'error');
@@ -510,9 +541,21 @@ export function Attendance() {
                                             Tersimpan & tersinkronisasi otomatis ke rekap dosen
                                         </span>
                                     </div>
-                                    <Link to="/rekap" className="btn btn-secondary btn-xs" style={{ textDecoration: 'none', fontWeight: 600 }}>
-                                        Cek Status Kelayakan UAS &rarr;
-                                    </Link>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary btn-xs"
+                                            onClick={triggerSticker}
+                                            style={{ textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                            title="Tampilkan animasi stiker presensi"
+                                        >
+                                            <span>⚡</span>
+                                            <span>Lihat Stiker Presensi</span>
+                                        </button>
+                                        <Link to="/rekap" className="btn btn-secondary btn-xs" style={{ textDecoration: 'none', fontWeight: 600 }}>
+                                            Cek Status Kelayakan UAS &rarr;
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         ) : activeSession ? (
@@ -735,6 +778,37 @@ export function Attendance() {
                     </div>
                 )}
             </div>
+
+            {/* Pop-up Animasi Stiker Perayaan Presensi - WOKEE PRESENSI MASUK BOSKYUH */}
+            {showSuccessSticker && (
+                <div
+                    className={`attendance-sticker-overlay ${isClosingSticker ? 'closing' : ''}`}
+                    onClick={closeSticker}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Presensi Berhasil Dicatat"
+                >
+                    <div className="attendance-sticker-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="attendance-sticker-aura" />
+                        <div className="attendance-sticker-shockwave" />
+                        <div className="attendance-sticker-shockwave delay-1" />
+                        <div className="attendance-sticker-wrapper" onClick={closeSticker}>
+                            <img
+                                src={presensiSticker}
+                                alt="Wokee Presensi Masuk Boskyuh"
+                                className="attendance-sticker-img"
+                            />
+                        </div>
+                        <div className="attendance-sticker-badge" onClick={closeSticker}>
+                            <CheckCircleIcon size={18} />
+                            <span>Presensi Berhasil Dicatat!</span>
+                        </div>
+                        <div className="attendance-sticker-hint">
+                            Klik di mana saja untuk menutup
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

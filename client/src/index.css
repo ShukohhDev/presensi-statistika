@@ -2937,3 +2937,216 @@ input:focus, textarea:focus, select:focus {
   border-color: #DC2626 transparent transparent transparent;
 }
 
+/* ==========================================================================
+   Stiker Animasi Perayaan Presensi - "WOKEE PRESENSI MASUK BOSKYUH"
+   Animasi Pop-In Keren & Efek Aura Listrik Biru (Medium Size)
+   ========================================================================== */
+.attendance-sticker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 7, 18, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  animation: stickerOverlayFadeIn 0.25s ease-out forwards;
+  padding: 20px;
+  user-select: none;
+}
+
+.attendance-sticker-overlay.closing {
+  animation: stickerOverlayFadeOut 0.25s ease-in forwards;
+}
+
+.attendance-sticker-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* Lingkaran Gelombang Shockwave Listrik */
+.attendance-sticker-shockwave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  margin-top: -70px;
+  margin-left: -70px;
+  border-radius: 50%;
+  border: 3px solid rgba(56, 189, 248, 0.9);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.8), inset 0 0 20px rgba(14, 165, 233, 0.6);
+  pointer-events: none;
+  animation: stickerShockwaveRing 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.attendance-sticker-shockwave.delay-1 {
+  animation-delay: 0.5s;
+}
+
+/* Glow Radial di Belakang Stiker */
+.attendance-sticker-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 270px;
+  height: 270px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.45) 0%, rgba(59, 130, 246, 0.25) 45%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(14px);
+  pointer-events: none;
+  animation: stickerAuraPulse 2s ease-in-out infinite alternate;
+}
+
+/* Box Gambar Stiker Berukuran Sedang (Medium) */
+.attendance-sticker-wrapper {
+  position: relative;
+  width: min(270px, 75vw);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: stickerPopIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  z-index: 2;
+}
+
+.attendance-sticker-overlay.closing .attendance-sticker-wrapper {
+  animation: stickerPopOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.attendance-sticker-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 22px rgba(56, 189, 248, 0.8))
+          drop-shadow(0 8px 32px rgba(2, 132, 199, 0.6));
+  animation: stickerFloat 2.2s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Badge Notifikasi Bawah Stiker */
+.attendance-sticker-badge {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.95), rgba(37, 99, 235, 0.95));
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 18px rgba(14, 165, 233, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.3px;
+  animation: stickerBadgeSlideUp 0.4s ease-out 0.15s both;
+  z-index: 3;
+}
+
+.attendance-sticker-hint {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: rgba(224, 242, 254, 0.75);
+  letter-spacing: 0.2px;
+  animation: stickerBadgeSlideUp 0.4s ease-out 0.25s both;
+  z-index: 3;
+}
+
+/* Keyframe Animations */
+@keyframes stickerPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.12) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes stickerPopOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.35) rotate(6deg);
+  }
+}
+
+@keyframes stickerFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.2deg);
+  }
+  100% {
+    transform: translateY(2px) rotate(-1deg);
+  }
+}
+
+@keyframes stickerShockwaveRing {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes stickerAuraPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.9;
+  }
+}
+
+@keyframes stickerOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes stickerOverlayFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes stickerBadgeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
