@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://presensi-mk-statistika-production.up.railway.app/api/$1"
+      "destination": "https://presensi-statistika-ti25c-production.up.railway.app/api/$1"
     },
     {
       "source": "/uploads/(.*)",
-      "destination": "https://presensi-mk-statistika-production.up.railway.app/uploads/$1"
+      "destination": "https://presensi-statistika-ti25c-production.up.railway.app/uploads/$1"
     },
     {
       "source": "/(.*)",
