@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { api, API_URL } from '../utils/api';
+import { api, API_URL, sortStudentsByName } from '../utils/api';
 import { useToast } from '../contexts/ToastContext';
 import { Modal } from '../components/Common/Modal';
 import {
@@ -111,7 +111,7 @@ export function AdminDashboard() {
 
             setStats(statsData);
             setSessions(sessionsData.sessions || []);
-            setStudents(studentsData.students || []);
+            setStudents(sortStudentsByName(studentsData.students || []));
             setActiveSession(activeData.session || null);
 
             if (courseData?.info) {
@@ -148,7 +148,7 @@ export function AdminDashboard() {
         try {
             setLoadingAttendances(true);
             const data = await api.getSessionAttendances(sessionId);
-            setSessionAttendances(data.attendances || []);
+            setSessionAttendances(sortStudentsByName(data.attendances || []));
         } catch (err) {
             console.error('Error loading session attendances:', err);
         } finally {
@@ -371,7 +371,7 @@ export function AdminDashboard() {
         try {
             setLoadingRecap(true);
             const data = await api.getAttendanceRecap();
-            setRecapData(data.recap || []);
+            setRecapData(sortStudentsByName(data.recap || []));
         } catch (err) {
             console.error('Error loading recap for simulator:', err);
             addToast('Gagal memuat rekap kehadiran mahasiswa.', 'error');

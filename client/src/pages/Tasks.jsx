@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api, API_URL } from '../utils/api';
+import { api, API_URL, sortStudentsByName } from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import {
@@ -255,7 +255,7 @@ export function Tasks() {
         setLoadingSlotStatus(true);
         try {
             const data = await api.getAssignmentStatus(slot.id);
-            setSlotStudentStatus(data.students || []);
+            setSlotStudentStatus(sortStudentsByName(data.students || []));
         } catch (err) {
             addToast(err.message || 'Gagal memuat status pengumpulan.', 'error');
         } finally {

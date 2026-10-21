@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../utils/api';
+import { api, sortStudentsByName } from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import {
@@ -30,7 +30,7 @@ export function Recap() {
         try {
             setLoading(true);
             const data = await api.getAttendanceRecap();
-            setRecapData(data.recap || []);
+            setRecapData(sortStudentsByName(data.recap || []));
             setSessions(data.sessions || []);
         } catch (err) {
             console.error('Error loading recap:', err);

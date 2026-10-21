@@ -318,3 +318,31 @@ export const api = {
     deleteMaterial: (id) =>
         request(`/api/materials/${id}`, { method: 'DELETE' }),
 };
+
+/**
+ * Memformat nama mahasiswa agar huruf pertama setiap kata kapital (Title Case)
+ */
+export function formatStudentName(name) {
+    if (!name) return '';
+    if (name.includes('#')) return name; // Jangan ubah nama admin seperti Shukoh#Dev
+    return name
+        .trim()
+        .split(/\s+/)
+        .map(word => (word ? word.charAt(0).toUpperCase() + word.slice(1) : ''))
+        .join(' ');
+}
+
+/**
+ * Mengurutkan array mahasiswa berdasarkan nama secara abjad case-insensitive (A-Z)
+ * dan menstandardisasi penulisan nama ke Title Case
+ */
+export function sortStudentsByName(list) {
+    if (!Array.isArray(list)) return [];
+    return [...list]
+        .map(item => ({
+            ...item,
+            name: formatStudentName(item.name)
+        }))
+        .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'id', { sensitivity: 'base' }));
+}
+
