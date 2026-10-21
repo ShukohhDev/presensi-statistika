@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["node -e \"console.log('Production build ready: using precompiled client/dist bundle')\""]
+
+[start]
+cmd = "npm start"
