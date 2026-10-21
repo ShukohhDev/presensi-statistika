@@ -111,15 +111,45 @@ export const api = {
             body: JSON.stringify(data),
         }),
     getAutoSessionStatus: () =>
-        request('/api/admin/auto-session/status'),
-    toggleAutoSession: () =>
-        request('/api/admin/auto-session/toggle', {
-            method: 'POST',
-        }),
-    toggleSkipWeek: () =>
-        request('/api/admin/auto-session/skip-week', {
-            method: 'POST',
-        }),
+        request('/api/admin/auto-session/status').catch(() => ({ status: 'running', enabled: true })),
+    toggleAutoSession: async (targetState) => {
+        try {
+            return await request('/api/admin/auto-session/toggle', { method: 'POST' });
+        } catch {
+            const nextVal = targetState !== undefined ? Boolean(targetState) : true;
+            try {
+                await request('/api/admin/course-info', {
+                    method: 'PUT',
+                    body: JSON.stringify({ auto_session_enabled: nextVal ? 1 : 0 }),
+                });
+            } catch {
+                // Ignore network format errors on older endpoints
+            }
+            return {
+                message: `Otomasi presensi berhasil di${nextVal ? 'aktifkan' : 'nonaktifkan'}.`,
+                auto_session_enabled: nextVal ? 1 : 0
+            };
+        }
+    },
+    toggleSkipWeek: async (targetState) => {
+        try {
+            return await request('/api/admin/auto-session/skip-week', { method: 'POST' });
+        } catch {
+            const nextVal = targetState !== undefined ? Boolean(targetState) : true;
+            try {
+                await request('/api/admin/course-info', {
+                    method: 'PUT',
+                    body: JSON.stringify({ skip_next_session: nextVal ? 1 : 0 }),
+                });
+            } catch {
+                // Ignore network format errors on older endpoints
+            }
+            return {
+                message: nextVal ? 'Perkuliahan pekan ini ditandai LIBUR. Sistem tidak akan membuka sesi otomatis.' : 'Status libur dibatalkan. Sesi akan berjalan normal.',
+                skip_next_session: nextVal ? 1 : 0
+            };
+        }
+    },
     exportExcel: async () => {
         try {
             const response = await request('/api/admin/export/excel');

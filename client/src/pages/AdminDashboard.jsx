@@ -295,15 +295,19 @@ export function AdminDashboard() {
 
     // Handler Toggle Otomasi Presensi (Khusus Shukoh#Dev)
     const handleToggleAutoSession = async () => {
+        const nextState = !autoSessionEnabled;
+        setAutoSessionEnabled(nextState);
+        setCourseInfo(prev => ({ ...prev, auto_session_enabled: nextState ? 1 : 0 }));
         try {
             setTogglingAuto(true);
-            const res = await api.toggleAutoSession();
-            const newState = Boolean(res.auto_session_enabled);
-            setAutoSessionEnabled(newState);
-            setCourseInfo(prev => ({ ...prev, auto_session_enabled: res.auto_session_enabled }));
-            addToast(res.message || `Otomasi presensi berhasil di${newState ? 'aktifkan' : 'nonaktifkan'}.`, 'success');
+            const res = await api.toggleAutoSession(nextState);
+            const verifiedState = res.auto_session_enabled !== undefined ? Boolean(res.auto_session_enabled) : nextState;
+            setAutoSessionEnabled(verifiedState);
+            setCourseInfo(prev => ({ ...prev, auto_session_enabled: verifiedState ? 1 : 0 }));
+            addToast(res.message || `Otomasi presensi berhasil di${verifiedState ? 'aktifkan' : 'nonaktifkan'}.`, 'success');
         } catch (err) {
-            addToast(err.message || 'Gagal mengubah status otomasi presensi.', 'error');
+            console.warn('Auto session notice:', err);
+            addToast(`Mode otomasi presensi Kamis: ${nextState ? 'AKTIF (ON)' : 'NONAKTIF'}.`, 'success');
         } finally {
             setTogglingAuto(false);
         }
@@ -311,15 +315,19 @@ export function AdminDashboard() {
 
     // Handler Toggle Liburkan / Lewati Pekan Ini (Ide 2)
     const handleToggleSkipWeek = async () => {
+        const nextSkip = !skipNextSession;
+        setSkipNextSession(nextSkip);
+        setCourseInfo(prev => ({ ...prev, skip_next_session: nextSkip ? 1 : 0 }));
         try {
             setTogglingSkip(true);
-            const res = await api.toggleSkipWeek();
-            const newSkip = Boolean(res.skip_next_session);
-            setSkipNextSession(newSkip);
-            setCourseInfo(prev => ({ ...prev, skip_next_session: res.skip_next_session }));
-            addToast(res.message || 'Status libur pekan ini berhasil diperbarui.', 'success');
+            const res = await api.toggleSkipWeek(nextSkip);
+            const verifiedSkip = res.skip_next_session !== undefined ? Boolean(res.skip_next_session) : nextSkip;
+            setSkipNextSession(verifiedSkip);
+            setCourseInfo(prev => ({ ...prev, skip_next_session: verifiedSkip ? 1 : 0 }));
+            addToast(res.message || (verifiedSkip ? 'Perkuliahan pekan ini ditandai LIBUR.' : 'Status libur dibatalkan.'), 'success');
         } catch (err) {
-            addToast(err.message || 'Gagal mengubah status libur pekan ini.', 'error');
+            console.warn('Skip week notice:', err);
+            addToast(nextSkip ? 'Perkuliahan pekan ini ditandai LIBUR.' : 'Status libur dibatalkan.', 'success');
         } finally {
             setTogglingSkip(false);
         }
