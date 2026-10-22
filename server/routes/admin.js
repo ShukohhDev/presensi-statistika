@@ -61,6 +61,48 @@ router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
     }
 });
 
+// PUT /api/admin/session/:id - Update nomor pertemuan, materi perkuliahan, dan durasi sesi
+router.put('/session/:id', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const sessionId = req.params.id;
+        const { meeting_number, title, duration_minutes } = req.body;
+        const db = getDb();
+
+        const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+        if (!session) {
+            return res.status(404).json({ error: 'Sesi presensi tidak ditemukan.' });
+        }
+
+        const newMeetingNumber = meeting_number ? parseInt(meeting_number, 10) : session.meeting_number;
+        const newTitle = title !== undefined && title.trim() ? title.trim() : session.title;
+        const newDuration = duration_minutes ? Math.max(5, parseInt(duration_minutes, 10)) : session.duration_minutes;
+
+        db.prepare(`
+            UPDATE sessions 
+            SET meeting_number = ?, title = ?, duration_minutes = ?
+            WHERE id = ?
+        `).run(newMeetingNumber, newTitle, newDuration, sessionId);
+
+        // Log aktivitas admin
+        db.prepare(
+            'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
+        ).run(
+            req.user.id,
+            'edit_sesi',
+            `Mengubah sesi pertemuan #${newMeetingNumber}: ${newTitle} (Durasi: ${newDuration} menit)`
+        );
+
+        const updatedSession = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+        res.json({
+            message: `Sesi Pertemuan ke-${newMeetingNumber} & materi kuliah berhasil diperbarui.`,
+            session: updatedSession
+        });
+    } catch (err) {
+        console.error('Update session error:', err);
+        res.status(500).json({ error: 'Terjadi kesalahan server saat memperbarui sesi.' });
+    }
+});
+
 // PUT /api/admin/session/mode - Ganti mode presensi (mandiri mahasiswa vs manual admin)
 router.put('/session/mode', authenticateToken, requireAdmin, (req, res) => {
     try {

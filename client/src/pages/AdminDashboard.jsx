@@ -40,6 +40,14 @@ export function AdminDashboard() {
     const [updatingMode, setUpdatingMode] = useState(false);
     const [openingSession, setOpeningSession] = useState(false);
 
+    // Modal Ubah Sesi Pertemuan & Materi Perkuliahan
+    const [editSessionModalOpen, setEditSessionModalOpen] = useState(false);
+    const [editingSessionTarget, setEditingSessionTarget] = useState(null);
+    const [editingMeetingNumber, setEditingMeetingNumber] = useState('');
+    const [editingTitle, setEditingTitle] = useState('');
+    const [editingDuration, setEditingDuration] = useState(15);
+    const [savingSession, setSavingSession] = useState(false);
+
     // Form announcement
     const [announcementTitle, setAnnouncementTitle] = useState('');
     const [announcementContent, setAnnouncementContent] = useState('');
@@ -256,6 +264,69 @@ export function AdminDashboard() {
             await loadDashboardData();
         } catch (err) {
             addToast(err.message || 'Gagal menutup sesi.', 'error');
+        }
+    };
+
+    // Handler Buka Modal Edit Sesi & Materi Perkuliahan
+    const handleOpenEditSession = (sessionToEdit) => {
+        const target = sessionToEdit || activeSession;
+        if (!target) return;
+        setEditingSessionTarget(target);
+        setEditingMeetingNumber(target.meeting_number || '');
+        setEditingTitle(target.title || '');
+        setEditingDuration(target.duration_minutes || 15);
+        setEditSessionModalOpen(true);
+    };
+
+    // Handler Simpan Perubahan Sesi & Materi Perkuliahan
+    const handleSaveEditSession = async (e) => {
+        e.preventDefault();
+        const target = editingSessionTarget || activeSession;
+        if (!target) return;
+
+        const num = parseInt(editingMeetingNumber, 10);
+        if (!num || num < 1) {
+            addToast('Nomor pertemuan harus berupa angka positif (minimal 1).', 'error');
+            return;
+        }
+
+        const dur = parseInt(editingDuration, 10);
+        if (!dur || dur < 5) {
+            addToast('Durasi minimal sesi perkuliahan adalah 5 menit.', 'error');
+            return;
+        }
+
+        try {
+            setSavingSession(true);
+            const res = await api.updateSession(target.id, {
+                meeting_number: num,
+                title: editingTitle.trim() || `Pertemuan ${num}`,
+                duration_minutes: dur
+            });
+
+            // Optimistic update pada activeSession dan daftar sessions
+            if (activeSession && activeSession.id === target.id) {
+                setActiveSession(prev => ({
+                    ...prev,
+                    meeting_number: num,
+                    title: editingTitle.trim() || `Pertemuan ${num}`,
+                    duration_minutes: dur
+                }));
+            }
+            setSessions(prev => prev.map(s => s.id === target.id ? {
+                ...s,
+                meeting_number: num,
+                title: editingTitle.trim() || `Pertemuan ${num}`,
+                duration_minutes: dur
+            } : s));
+
+            addToast(res.message || `Sesi Pertemuan ${num} & materi berhasil diperbarui.`, 'success');
+            setEditSessionModalOpen(false);
+            await loadDashboardData(true);
+        } catch (err) {
+            addToast(err.message || 'Gagal memperbarui sesi pertemuan.', 'error');
+        } finally {
+            setSavingSession(false);
         }
     };
 
@@ -852,14 +923,27 @@ PJ MK Statistika Kelas TI25C`;
                     {activeSession ? (
                         <div style={{ padding: '8px 0' }}>
                             <div style={{ backgroundColor: 'var(--color-primary-subtle)', padding: '16px', borderRadius: 'var(--radius-lg)', marginBottom: '16px' }}>
-                                <div style={{ fontSize: '0.813rem', color: 'var(--color-primary)', fontWeight: 600 }}>
-                                    Pertemuan ke-{activeSession.meeting_number}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: '1 1 200px' }}>
+                                        <div style={{ fontSize: '0.813rem', color: 'var(--color-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            Pertemuan ke-{activeSession.meeting_number}
+                                        </div>
+                                        <h3 style={{ fontSize: '1.15rem', marginTop: '4px', color: 'var(--color-text)', fontWeight: 600 }}>
+                                            {activeSession.title}
+                                        </h3>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary btn-xs"
+                                        onClick={() => handleOpenEditSession(activeSession)}
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 600, flexShrink: 0, borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+                                        title="Ubah nomor pertemuan, materi perkuliahan, atau perpanjang durasi sesi presensi"
+                                    >
+                                        <EditIcon size={14} /> Ubah Sesi & Materi
+                                    </button>
                                 </div>
-                                <h3 style={{ fontSize: '1.125rem', marginTop: '4px', color: 'var(--color-text)' }}>
-                                    {activeSession.title}
-                                </h3>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                                     <ClockIcon size={18} />
                                     <span style={{ fontSize: '1.25rem', fontWeight: 700, fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em', color: countdown < 180 ? 'var(--color-danger)' : 'var(--color-primary)' }}>
                                         {formatTimer(countdown)}
@@ -997,6 +1081,16 @@ PJ MK Statistika Kelas TI25C`;
                                 >
                                     <WhatsAppIcon size={18} />
                                     Salin Pengingat WA Mahasiswa Belum Presensi
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary btn-block"
+                                    onClick={() => handleOpenEditSession(activeSession)}
+                                    style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                    title="Edit nomor pertemuan, topik materi, atau perpanjang waktu sesi presensi"
+                                >
+                                    <EditIcon size={16} /> Ubah Sesi Pertemuan & Materi Kuliah
                                 </button>
 
                                 <button
@@ -1633,6 +1727,107 @@ PJ MK Statistika Kelas TI25C`;
                             disabled={savingStatus}
                         >
                             {savingStatus ? 'Menyimpan...' : 'Simpan Perubahan'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Modal Ubah Sesi Pertemuan & Materi Kuliah */}
+            <Modal
+                isOpen={editSessionModalOpen}
+                onClose={() => setEditSessionModalOpen(false)}
+                title="Ubah Sesi Pertemuan & Materi Kuliah"
+                icon={<EditIcon size={18} />}
+            >
+                <form onSubmit={handleSaveEditSession}>
+                    <p style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: 1.5 }}>
+                        Perbarui nomor pertemuan, judul topik materi, atau sesuaikan durasi sesi jika terdapat kesalahan input atau perubahan jadwal kelas.
+                    </p>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="editMeetingNumber">
+                            Nomor Pertemuan
+                        </label>
+                        <input
+                            id="editMeetingNumber"
+                            type="number"
+                            min="1"
+                            max="32"
+                            className="form-input"
+                            value={editingMeetingNumber}
+                            onChange={(e) => setEditingMeetingNumber(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="editSessionTitle">
+                            Materi / Topik Perkuliahan
+                        </label>
+                        <input
+                            id="editSessionTitle"
+                            type="text"
+                            className="form-input"
+                            placeholder="Contoh: Statistika Deskriptif & Distribusi Frekuensi"
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <label className="form-label" htmlFor="editDurationMinutes" style={{ margin: 0 }}>
+                                Durasi Sesi Presensi (Menit)
+                            </label>
+                            <span className="badge-status badge-info" style={{ fontSize: '0.75rem' }}>
+                                Total: {editingDuration} menit
+                            </span>
+                        </div>
+                        <input
+                            id="editDurationMinutes"
+                            type="number"
+                            min="5"
+                            max="720"
+                            className="form-input"
+                            value={editingDuration}
+                            onChange={(e) => setEditingDuration(Number(e.target.value))}
+                            required
+                        />
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginRight: '2px' }}>
+                                Tambah waktu:
+                            </span>
+                            {[15, 30, 45, 60].map((addM) => (
+                                <button
+                                    key={addM}
+                                    type="button"
+                                    className="btn btn-secondary btn-xs"
+                                    onClick={() => setEditingDuration(prev => (Number(prev) || 0) + addM)}
+                                    style={{ padding: '2px 8px', fontSize: '0.72rem' }}
+                                    title={`Perpanjang durasi sesi presensi sebanyak ${addM} menit`}
+                                >
+                                    +{addM} mnt
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="modal-footer" style={{ borderTop: 'none', padding: 0, marginTop: '20px' }}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setEditSessionModalOpen(false)}
+                            disabled={savingSession}
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-primary btn-sm"
+                            disabled={savingSession}
+                        >
+                            {savingSession ? 'Menyimpan...' : 'Simpan Perubahan Sesi'}
                         </button>
                     </div>
                 </form>

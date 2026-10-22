@@ -105,6 +105,11 @@ export const api = {
             method: 'PUT',
             body: JSON.stringify({ session_id, attendance_mode }),
         }),
+    updateSession: (sessionId, data) =>
+        request(`/api/admin/session/${sessionId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }),
     closeSession: (session_id) =>
         request('/api/admin/session/close', {
             method: 'POST',
