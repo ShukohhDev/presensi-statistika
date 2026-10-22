@@ -101,10 +101,24 @@ export function AdminDashboard() {
     const [checkingAuto, setCheckingAuto] = useState(false);
     const [copyingMorningWA, setCopyingMorningWA] = useState(false);
     const [studentSearchQuery, setStudentSearchQuery] = useState('');
+    const [updatingRowUserId, setUpdatingRowUserId] = useState(null);
 
     const { addToast } = useToast();
 
-    const loadDashboardData = useCallback(async () => {
+    const loadSessionAttendances = async (sessionId, showLoading = true) => {
+        if (!sessionId) return;
+        try {
+            if (showLoading) setLoadingAttendances(true);
+            const data = await api.getSessionAttendances(sessionId);
+            setSessionAttendances(sortStudentsByName(data.attendances || []));
+        } catch (err) {
+            console.error('Error loading session attendances:', err);
+        } finally {
+            if (showLoading) setLoadingAttendances(false);
+        }
+    };
+
+    const loadDashboardData = useCallback(async (preserveCurrentSelection = false) => {
         try {
             setLoading(true);
             const [statsData, sessionsData, studentsData, activeData, courseData] = await Promise.all([
@@ -116,7 +130,8 @@ export function AdminDashboard() {
             ]);
 
             setStats(statsData);
-            setSessions(sessionsData.sessions || []);
+            const loadedSessions = sessionsData.sessions || [];
+            setSessions(loadedSessions);
             setStudents(sortStudentsByName(studentsData.students || []));
             setActiveSession(activeData.session || null);
 
@@ -126,20 +141,26 @@ export function AdminDashboard() {
                 setSkipNextSession(Boolean(courseData.info.skip_next_session));
             }
 
-            // If there's an active session, load its detailed attendance list
-            if (activeData?.session) {
-                setSelectedVerificationSessionId(activeData.session.id);
-                setTargetSessionId(activeData.session.id);
-                loadSessionAttendances(activeData.session.id);
-            } else if (sessionsData?.sessions && sessionsData.sessions.length > 0) {
-                setSelectedVerificationSessionId(sessionsData.sessions[0].id);
-                setTargetSessionId(sessionsData.sessions[0].id);
-                loadSessionAttendances(sessionsData.sessions[0].id);
-            }
+            // Pertahankan sesi yang sedang dipilih agar tidak melompat (glitch)
+            setSelectedVerificationSessionId(prevId => {
+                let targetId = prevId;
+                if (!preserveCurrentSelection || !targetId) {
+                    if (activeData?.session) {
+                        targetId = activeData.session.id;
+                    } else if (loadedSessions.length > 0) {
+                        targetId = loadedSessions[0].id;
+                    }
+                }
+                if (targetId) {
+                    setTargetSessionId(targetId);
+                    loadSessionAttendances(targetId, !preserveCurrentSelection);
+                }
+                return targetId;
+            });
 
             // Set next meeting number suggestion
-            if (sessionsData.sessions && sessionsData.sessions.length > 0) {
-                const maxMeeting = Math.max(...sessionsData.sessions.map(s => s.meeting_number));
+            if (loadedSessions.length > 0) {
+                const maxMeeting = Math.max(...loadedSessions.map(s => s.meeting_number));
                 setMeetingNumber(maxMeeting + 1);
             }
         } catch (err) {
@@ -149,18 +170,6 @@ export function AdminDashboard() {
             setLoading(false);
         }
     }, [addToast]);
-
-    const loadSessionAttendances = async (sessionId) => {
-        try {
-            setLoadingAttendances(true);
-            const data = await api.getSessionAttendances(sessionId);
-            setSessionAttendances(sortStudentsByName(data.attendances || []));
-        } catch (err) {
-            console.error('Error loading session attendances:', err);
-        } finally {
-            setLoadingAttendances(false);
-        }
-    };
 
     useEffect(() => {
         loadDashboardData();
@@ -485,8 +494,41 @@ PJ MK Statistika Kelas TI25C`;
         setSelectedStudent(student);
         const currentSession = preferredSessionId || selectedVerificationSessionId || activeSession?.id || (sessions.length > 0 ? sessions[0].id : null);
         setTargetSessionId(currentSession);
-        setSelectedStatus('hadir');
+        
+        // Baca status kehadiran saat ini jika ada
+        const currentAtt = sessionAttendances.find(a => a.user_id === student.id);
+        setSelectedStatus(currentAtt?.status || 'hadir');
         setEditModalOpen(true);
+    };
+
+    // Ubah status cepat 1-klik langsung di tabel (Optimistic Update tanpa flicker / glitch)
+    const handleQuickStatusChange = async (studentId, studentName, newStatus) => {
+        const sessionId = selectedVerificationSessionId || activeSession?.id || (sessions.length > 0 ? sessions[0].id : null);
+        if (!sessionId) {
+            addToast('Pilih sesi perkuliahan terlebih dahulu.', 'error');
+            return;
+        }
+
+        // 1. Optimistic Update instan pada tabel tanpa re-render penuh
+        setSessionAttendances(prev => prev.map(a => 
+            a.user_id === studentId ? { ...a, status: newStatus } : a
+        ));
+        setUpdatingRowUserId(studentId);
+
+        try {
+            await api.updateAttendanceStatus(studentId, sessionId, newStatus);
+            addToast(`Status ${studentName} diubah ke ${newStatus === 'hadir' ? 'Hadir (Masuk)' : newStatus}.`, 'success');
+            
+            // Background sync statistik tanpa mengganggu posisi UI
+            const statsData = await api.getDashboardStats().catch(() => null);
+            if (statsData) setStats(statsData);
+        } catch (err) {
+            // Revert jika gagal
+            await loadSessionAttendances(sessionId, false);
+            addToast(err.message || 'Gagal memperbarui status kehadiran.', 'error');
+        } finally {
+            setUpdatingRowUserId(null);
+        }
     };
 
     const handleSaveStatus = async (e) => {
@@ -496,16 +538,28 @@ PJ MK Statistika Kelas TI25C`;
             return;
         }
 
+        const studentId = selectedStudent.id;
+        const targetSession = targetSessionId;
+        const newStatus = selectedStatus;
+
+        // 1. Optimistic Update seketika di tabel
+        setSessionAttendances(prev => prev.map(a => 
+            a.user_id === studentId ? { ...a, status: newStatus } : a
+        ));
+        setEditModalOpen(false);
+
         try {
             setSavingStatus(true);
-            await api.updateAttendanceStatus(selectedStudent.id, targetSessionId, selectedStatus);
-            addToast(`Status kehadiran ${selectedStudent.name} berhasil diperbarui.`, 'success');
-            setEditModalOpen(false);
-            if (targetSessionId) {
-                await loadSessionAttendances(targetSessionId);
-            }
-            await loadDashboardData();
+            await api.updateAttendanceStatus(studentId, targetSession, newStatus);
+            addToast(`Status kehadiran ${selectedStudent.name} berhasil diperbarui ke ${newStatus === 'hadir' ? 'Hadir (Masuk)' : newStatus}.`, 'success');
+            
+            // 2. Background sync data tanpa unmount tabel dan tanpa mereset sesi
+            await loadSessionAttendances(targetSession, false);
+            const statsData = await api.getDashboardStats().catch(() => null);
+            if (statsData) setStats(statsData);
         } catch (err) {
+            // Revert jika terjadi kesalahan
+            await loadSessionAttendances(targetSession, false);
             addToast(err.message || 'Gagal mengubah status kehadiran.', 'error');
         } finally {
             setSavingStatus(false);
@@ -1244,7 +1298,7 @@ PJ MK Statistika Kelas TI25C`;
                     </div>
                 </div>
 
-                {loadingAttendances ? (
+                {loadingAttendances && sessionAttendances.length === 0 ? (
                     <div className="text-center text-muted" style={{ padding: '24px 0' }}>
                         Memuat data kehadiran sesi...
                     </div>
@@ -1295,9 +1349,32 @@ PJ MK Statistika Kelas TI25C`;
                                         <td>{index + 1}</td>
                                         <td style={{ fontWeight: 600 }}>{att.name}</td>
                                         <td>
-                                            <span className={`badge-status badge-${att.status}`}>
-                                                {att.status === 'hadir' ? 'Masuk (Hadir)' : att.status}
-                                            </span>
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                <span className={`badge-status badge-${att.status}`}>
+                                                    {att.status === 'hadir' ? 'Masuk (Hadir)' : att.status}
+                                                </span>
+                                                {att.status !== 'hadir' && (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-xs"
+                                                        onClick={() => handleQuickStatusChange(att.user_id, att.name, 'hadir')}
+                                                        disabled={updatingRowUserId === att.user_id}
+                                                        style={{
+                                                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                                                            color: '#059669',
+                                                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                            padding: '2px 8px',
+                                                            fontSize: '0.72rem',
+                                                            fontWeight: 600,
+                                                            borderRadius: 'var(--radius-full)',
+                                                            cursor: updatingRowUserId === att.user_id ? 'wait' : 'pointer'
+                                                        }}
+                                                        title="Set Hadir langsung untuk mahasiswa ini (1-klik)"
+                                                    >
+                                                        {updatingRowUserId === att.user_id ? 'Menyimpan...' : '+ Set Hadir'}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                         <td style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)' }}>
                                             {att.note || '-'}
@@ -1407,31 +1484,60 @@ PJ MK Statistika Kelas TI25C`;
                             <tr>
                                 <th style={{ width: '48px' }}>No</th>
                                 <th>Nama Mahasiswa</th>
-                                <th>Status Akun</th>
+                                <th>Status Kehadiran</th>
                                 <th style={{ textAlign: 'right' }}>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {students
                                 .filter(s => s.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim()))
-                                .map((student, index) => (
-                                    <tr key={student.id}>
-                                        <td style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--color-text-muted)' }}>{index + 1}</td>
-                                        <td style={{ fontWeight: 600 }}>{student.name}</td>
-                                        <td>
-                                            <span className="badge-status badge-hadir">Aktif</span>
-                                        </td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            <button
-                                                type="button"
-                                                className="btn btn-secondary btn-sm"
-                                                onClick={() => handleOpenEditStatus(student)}
-                                            >
-                                                <EditIcon size={14} /> Ubah Kehadiran
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                .map((student, index) => {
+                                    const att = sessionAttendances.find(a => a.user_id === student.id);
+                                    const curStatus = att ? att.status : 'alpha';
+                                    return (
+                                        <tr key={student.id}>
+                                            <td style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--color-text-muted)' }}>{index + 1}</td>
+                                            <td style={{ fontWeight: 600 }}>{student.name}</td>
+                                            <td>
+                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                    <span className={`badge-status badge-${curStatus}`}>
+                                                        {curStatus === 'hadir' ? 'Masuk (Hadir)' : curStatus}
+                                                    </span>
+                                                    {curStatus !== 'hadir' && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-xs"
+                                                            onClick={() => handleQuickStatusChange(student.id, student.name, 'hadir')}
+                                                            disabled={updatingRowUserId === student.id}
+                                                            style={{
+                                                                backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                                                                color: '#059669',
+                                                                border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                                padding: '2px 8px',
+                                                                fontSize: '0.72rem',
+                                                                fontWeight: 600,
+                                                                borderRadius: 'var(--radius-full)',
+                                                                cursor: updatingRowUserId === student.id ? 'wait' : 'pointer'
+                                                            }}
+                                                            title="Set Hadir langsung untuk mahasiswa ini (1-klik)"
+                                                        >
+                                                            {updatingRowUserId === student.id ? 'Menyimpan...' : '+ Set Hadir'}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary btn-sm"
+                                                    onClick={() => handleOpenEditStatus(student, selectedVerificationSessionId)}
+                                                >
+                                                    <EditIcon size={14} /> Ubah Kehadiran
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             {students.filter(s => s.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim())).length === 0 && (
                                 <tr>
                                     <td colSpan={4} style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--color-text-muted)' }}>
@@ -1466,21 +1572,16 @@ PJ MK Statistika Kelas TI25C`;
                             onChange={(e) => setTargetSessionId(Number(e.target.value))}
                             required
                         >
-                            {activeSession && (
-                                <option value={activeSession.id}>
-                                    Sesi Aktif (Pertemuan {activeSession.meeting_number})
-                                </option>
-                            )}
                             {sessions.map((s) => (
                                 <option key={s.id} value={s.id}>
-                                    Pertemuan {s.meeting_number} - {s.title}
+                                    {activeSession?.id === s.id ? '🟢 (Sesi Aktif) ' : ''}Pertemuan {s.meeting_number} - {s.title}
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label" htmlFor="statusSelect">Pilih Status Baru</label>
+                        <label className="form-label">Pilih Status Baru</label>
                         <div className="choice-pills">
                             <button
                                 type="button"
@@ -1515,18 +1616,6 @@ PJ MK Statistika Kelas TI25C`;
                                 Alpha
                             </button>
                         </div>
-                        <select
-                            id="statusSelect"
-                            className="form-select"
-                            value={selectedStatus}
-                            onChange={(e) => setSelectedStatus(e.target.value)}
-                            required
-                        >
-                            <option value="hadir">Hadir (Masuk)</option>
-                            <option value="izin">Izin</option>
-                            <option value="sakit">Sakit</option>
-                            <option value="alpha">Alpha (Tidak Hadir)</option>
-                        </select>
                     </div>
 
                     <div className="modal-footer" style={{ borderTop: 'none', padding: 0 }}>

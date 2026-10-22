@@ -209,27 +209,40 @@ router.put('/update-status', authenticateToken, requireAdmin, (req, res) => {
         const { user_id, session_id, status } = req.body;
         const db = getDb();
 
+        const userIdNum = parseInt(user_id, 10);
+        const sessionIdNum = parseInt(session_id, 10);
+
+        if (!userIdNum || !sessionIdNum || !status) {
+            return res.status(400).json({ error: 'Parameter user_id, session_id, dan status wajib diisi.' });
+        }
+
+        const validStatuses = ['hadir', 'izin', 'sakit', 'alpha'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Status kehadiran tidak valid.' });
+        }
+
         const existing = db.prepare(
             'SELECT * FROM attendance WHERE user_id = ? AND session_id = ?'
-        ).get(user_id, session_id);
+        ).get(userIdNum, sessionIdNum);
 
         if (existing) {
             db.prepare(
                 'UPDATE attendance SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND session_id = ?'
-            ).run(status, user_id, session_id);
+            ).run(status, userIdNum, sessionIdNum);
         } else {
             db.prepare(
-                'INSERT INTO attendance (user_id, session_id, status) VALUES (?, ?, ?)'
-            ).run(user_id, session_id, status);
+                'INSERT INTO attendance (user_id, session_id, status, submitted_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)'
+            ).run(userIdNum, sessionIdNum, status);
         }
 
         // Log aktivitas admin
-        const targetUser = db.prepare('SELECT name FROM users WHERE id = ?').get(user_id);
+        const targetUser = db.prepare('SELECT name FROM users WHERE id = ?').get(userIdNum);
+        const targetName = targetUser ? targetUser.name : `User #${userIdNum}`;
         db.prepare(
             'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
-        ).run(req.user.id, 'edit_presensi', `Mengubah status ${targetUser.name} menjadi ${status}`);
+        ).run(req.user.id, 'edit_presensi', `Mengubah status ${targetName} menjadi ${status}`);
 
-        res.json({ message: 'Status kehadiran berhasil diubah.' });
+        res.json({ message: 'Status kehadiran berhasil diubah.', status, user_id: userIdNum, session_id: sessionIdNum });
     } catch (err) {
         console.error('Update status error:', err);
         res.status(500).json({ error: 'Terjadi kesalahan server.' });
