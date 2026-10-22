@@ -8,8 +8,9 @@ const { getSchedulerStatus, checkSchedulerTick } = require('../services/schedule
 // POST /api/admin/session/open - Buka sesi presensi
 router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
     try {
-        const { meeting_number, title, duration_minutes } = req.body;
+        const { meeting_number, title, duration_minutes, attendance_mode } = req.body;
         const db = getDb();
+        const mode = attendance_mode === 'admin_only' ? 'admin_only' : 'self';
 
         // Cek apakah ada sesi yang masih terbuka
         const openSession = db.prepare("SELECT * FROM sessions WHERE status = 'open'").get();
@@ -24,9 +25,9 @@ router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
         }
 
         const result = db.prepare(
-            `INSERT INTO sessions (meeting_number, title, status, duration_minutes, opened_at, created_by) 
-             VALUES (?, ?, 'open', ?, CURRENT_TIMESTAMP, ?)`
-        ).run(meeting_number, title || `Pertemuan ${meeting_number}`, duration_minutes || 15, req.user.id);
+            `INSERT INTO sessions (meeting_number, title, status, duration_minutes, attendance_mode, opened_at, created_by) 
+             VALUES (?, ?, 'open', ?, ?, CURRENT_TIMESTAMP, ?)`
+        ).run(meeting_number, title || `Pertemuan ${meeting_number}`, duration_minutes || 15, mode, req.user.id);
 
         // Buat notifikasi untuk semua user
         const users = db.prepare("SELECT id FROM users WHERE role = 'user'").all();
@@ -34,11 +35,15 @@ router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
             `INSERT INTO notifications (user_id, title, message, type, created_by) VALUES (?, ?, ?, ?, ?)`
         );
 
+        const notifMsg = mode === 'admin_only'
+            ? `Sesi perkuliahan ${title || 'Pertemuan ' + meeting_number} telah dibuka. Presensi pada pertemuan ini dikelola secara manual oleh Dosen / PJ MK.`
+            : `Sesi presensi untuk ${title || 'Pertemuan ' + meeting_number} telah dibuka. Segera lakukan presensi kehadiran mandiri.`;
+
         users.forEach(user => {
             insertNotif.run(
                 user.id,
                 'Sesi Presensi Dibuka',
-                `Sesi presensi untuk ${title || 'Pertemuan ' + meeting_number} telah dibuka. Segera lakukan presensi.`,
+                notifMsg,
                 'reminder',
                 req.user.id
             );
@@ -47,11 +52,44 @@ router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
         // Log aktivitas
         db.prepare(
             'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
-        ).run(req.user.id, 'buka_sesi', `Membuka sesi presensi pertemuan ${meeting_number}`);
+        ).run(req.user.id, 'buka_sesi', `Membuka sesi presensi pertemuan ${meeting_number} [Mode: ${mode === 'admin_only' ? 'Manual Admin' : 'Mandiri Mahasiswa'}]`);
 
-        res.json({ message: 'Sesi presensi berhasil dibuka.', sessionId: result.lastInsertRowid });
+        res.json({ message: 'Sesi presensi berhasil dibuka.', sessionId: result.lastInsertRowid, attendance_mode: mode });
     } catch (err) {
         console.error('Open session error:', err);
+        res.status(500).json({ error: 'Terjadi kesalahan server.' });
+    }
+});
+
+// PUT /api/admin/session/mode - Ganti mode presensi (mandiri mahasiswa vs manual admin)
+router.put('/session/mode', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const { session_id, attendance_mode } = req.body;
+        const db = getDb();
+        const mode = attendance_mode === 'admin_only' ? 'admin_only' : 'self';
+
+        const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(session_id);
+        if (!session) {
+            return res.status(404).json({ error: 'Sesi presensi tidak ditemukan.' });
+        }
+
+        db.prepare("UPDATE sessions SET attendance_mode = ? WHERE id = ?").run(mode, session_id);
+
+        const modeText = mode === 'admin_only' 
+            ? 'Manual oleh Admin (Akses mahasiswa dikunci)' 
+            : 'Mandiri oleh Mahasiswa (Mahasiswa dapat absen sendiri)';
+
+        // Log aktivitas
+        db.prepare(
+            'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
+        ).run(req.user.id, 'ubah_mode_presensi', `Mengubah mode presensi pertemuan ${session.meeting_number} menjadi: ${modeText}`);
+
+        res.json({ 
+            message: `Mode presensi berhasil diubah ke: ${modeText}`, 
+            attendance_mode: mode 
+        });
+    } catch (err) {
+        console.error('Update session mode error:', err);
         res.status(500).json({ error: 'Terjadi kesalahan server.' });
     }
 });

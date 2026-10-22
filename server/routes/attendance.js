@@ -43,6 +43,13 @@ router.post('/submit', authenticateToken, uploadEvidence.single('evidence'), (re
             return res.status(400).json({ error: 'Sesi presensi tidak ditemukan atau sudah ditutup.' });
         }
 
+        // Validasi mode presensi: jika mode admin_only, mahasiswa dilarang submit mandiri
+        if (session.attendance_mode === 'admin_only' && req.user.role !== 'admin') {
+            return res.status(403).json({
+                error: 'Sesi presensi ini dikelola secara manual oleh Dosen / PJ MK. Mahasiswa tidak dapat melakukan presensi mandiri.'
+            });
+        }
+
         // Cek apakah sudah absen
         const existing = db.prepare(
             'SELECT * FROM attendance WHERE user_id = ? AND session_id = ?'

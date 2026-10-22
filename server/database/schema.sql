@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     title TEXT DEFAULT 'Pertemuan',
     status TEXT NOT NULL DEFAULT 'closed' CHECK(status IN ('open', 'closed')),
     duration_minutes INTEGER DEFAULT 15,
+    attendance_mode TEXT DEFAULT 'self' CHECK(attendance_mode IN ('self', 'admin_only')),
     opened_at DATETIME DEFAULT NULL,
     closed_at DATETIME DEFAULT NULL,
     created_by INTEGER NOT NULL,

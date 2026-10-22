@@ -95,10 +95,15 @@ export const api = {
         }),
 
     // Admin
-    openSession: (meeting_number, title, duration_minutes) =>
+    openSession: (meeting_number, title, duration_minutes, attendance_mode = 'self') =>
         request('/api/admin/session/open', {
             method: 'POST',
-            body: JSON.stringify({ meeting_number, title, duration_minutes }),
+            body: JSON.stringify({ meeting_number, title, duration_minutes, attendance_mode }),
+        }),
+    updateSessionMode: (session_id, attendance_mode) =>
+        request('/api/admin/session/mode', {
+            method: 'PUT',
+            body: JSON.stringify({ session_id, attendance_mode }),
         }),
     closeSession: (session_id) =>
         request('/api/admin/session/close', {

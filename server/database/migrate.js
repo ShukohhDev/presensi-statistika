@@ -221,6 +221,13 @@ function migrate() {
         console.error('Error saat sinkronisasi data akun mahasiswa:', err);
     }
 
+    try {
+        db.prepare("ALTER TABLE sessions ADD COLUMN attendance_mode TEXT DEFAULT 'self'").run();
+        console.log('Kolom attendance_mode berhasil ditambahkan ke tabel sessions.');
+    } catch (e) {
+        // Kolom sudah ada
+    }
+
     console.log('Database migration completed successfully.');
 }
 

@@ -13,7 +13,8 @@ import {
     XIcon,
     BookOpenIcon,
     ExternalLinkIcon,
-    WhatsAppIcon
+    WhatsAppIcon,
+    LockIcon
 } from '../components/Common/Icons';
 
 export function Attendance() {
@@ -588,15 +589,97 @@ export function Attendance() {
                                 </div>
                             </div>
                         ) : activeSession ? (
-                            /* Sesi Presensi Sedang Dibuka */
-                            <div>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                                    <div>
-                                        <span className="badge-status badge-active-session">Sesi Aktif</span>
-                                        <span style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', marginLeft: '8px' }}>
-                                            Pertemuan ke-{activeSession.meeting_number}
-                                        </span>
+                            activeSession.attendance_mode === 'admin_only' ? (
+                                /* Sesi Presensi Sedang Berjalan dalam Mode Manual oleh Admin / Dosen */
+                                <div style={{
+                                    padding: '28px 20px',
+                                    backgroundColor: 'var(--color-bg-hover)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '1.5px dashed rgba(234, 88, 12, 0.45)',
+                                    textAlign: 'center'
+                                }}>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        backgroundColor: 'rgba(234, 88, 12, 0.12)',
+                                        color: '#ea580c',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 16px'
+                                    }}>
+                                        <LockIcon size={30} />
                                     </div>
+
+                                    <div style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '4px 12px',
+                                        borderRadius: 'var(--radius-full)',
+                                        backgroundColor: 'rgba(234, 88, 12, 0.15)',
+                                        color: '#c2410c',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 700,
+                                        marginBottom: '12px'
+                                    }}>
+                                        <LockIcon size={13} />
+                                        <span>Mode Presensi Manual oleh Dosen / Admin</span>
+                                    </div>
+
+                                    <h3 style={{ fontSize: '1.2rem', color: 'var(--color-text)', marginBottom: '8px' }}>
+                                        Pertemuan ke-{activeSession.meeting_number}: {activeSession.title}
+                                    </h3>
+
+                                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', maxWidth: '520px', margin: '0 auto 18px', lineHeight: '1.55' }}>
+                                        Pada sesi perkuliahan ini, presensi kehadiran dicatat dan dikelola secara <strong>MANUAL</strong> langsung oleh <strong>Dosen Pengampu / PJ MK (Faqih Hidayatus Salam)</strong>.
+                                    </p>
+
+                                    <div style={{
+                                        maxWidth: '480px',
+                                        margin: '0 auto 20px',
+                                        padding: '14px 16px',
+                                        backgroundColor: 'var(--color-bg-card)',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--color-border)',
+                                        textAlign: 'left'
+                                    }}>
+                                        <div style={{ fontSize: '0.813rem', color: 'var(--color-text)', display: 'flex', alignItems: 'flex-start', gap: '10px', lineHeight: 1.5 }}>
+                                            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>ℹ️</span>
+                                            <span>
+                                                <strong>Catatan Mahasiswa:</strong> Tombol <em>"Kirim Presensi Kehadiran"</em> mandiri dinonaktifkan untuk sesi ini. Anda tidak perlu mengirim presensi mandiri. Status kehadiran Anda akan otomatis terupdate di halaman ini segera setelah diinput oleh PJ MK / Dosen.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                        <Link to="/rekap" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none', fontWeight: 600 }}>
+                                            Cek Rekap Kehadiran & Status UAS &rarr;
+                                        </Link>
+                                        {courseInfo?.whatsapp_group_link && (
+                                            <a
+                                                href={courseInfo.whatsapp_group_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-secondary btn-sm"
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#128C7E', borderColor: '#25D366', textDecoration: 'none' }}
+                                            >
+                                                <WhatsAppIcon size={16} /> Grup WhatsApp Kelas
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Sesi Presensi Sedang Dibuka (Mode Mandiri oleh Mahasiswa) */
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                                        <div>
+                                            <span className="badge-status badge-active-session">Sesi Aktif</span>
+                                            <span style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', marginLeft: '8px' }}>
+                                                Pertemuan ke-{activeSession.meeting_number}
+                                            </span>
+                                        </div>
 
                                     {timeLeft !== null && (
                                         <div className={`session-timer ${timeLeft < 180 ? 'urgent' : ''}`}>
@@ -786,7 +869,8 @@ export function Attendance() {
                                     </button>
                                 </form>
                             </div>
-                        ) : (
+                        )
+                    ) : (
                             /* Sesi Sedang Ditutup / Menunggu Jadwal */
                             (() => {
                                 const sched = getScheduleStatus();

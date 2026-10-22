@@ -17,7 +17,10 @@ import {
     CalculatorIcon,
     CalendarIcon,
     SearchIcon,
-    XIcon
+    XIcon,
+    LockIcon,
+    UnlockIcon,
+    ShieldIcon
 } from '../components/Common/Icons';
 
 export function AdminDashboard() {
@@ -33,6 +36,8 @@ export function AdminDashboard() {
     const [durationHours, setDurationHours] = useState(0);
     const [durationMins, setDurationMins] = useState(15);
     const [durationMinutes, setDurationMinutes] = useState(15);
+    const [attendanceMode, setAttendanceMode] = useState('self'); // 'self' (Mahasiswa mandiri) | 'admin_only' (Manual oleh admin)
+    const [updatingMode, setUpdatingMode] = useState(false);
     const [openingSession, setOpeningSession] = useState(false);
 
     // Form announcement
@@ -201,7 +206,8 @@ export function AdminDashboard() {
             const res = await api.openSession(
                 parseInt(meetingNumber, 10),
                 sessionTitle.trim() || `Pertemuan ${meetingNumber}`,
-                totalDuration
+                totalDuration,
+                attendanceMode
             );
             addToast(res.message || 'Sesi presensi berhasil dibuka.', 'success');
             setSessionTitle('');
@@ -210,6 +216,23 @@ export function AdminDashboard() {
             addToast(err.message || 'Gagal membuka sesi presensi.', 'error');
         } finally {
             setOpeningSession(false);
+        }
+    };
+
+    // Tombol Khusus: Ganti Mode Presensi (Mandiri Mahasiswa vs Manual oleh Admin)
+    const handleToggleSessionMode = async (targetMode) => {
+        if (!activeSession) return;
+        const currentMode = activeSession.attendance_mode || 'self';
+        const newMode = targetMode || (currentMode === 'admin_only' ? 'self' : 'admin_only');
+        try {
+            setUpdatingMode(true);
+            const res = await api.updateSessionMode(activeSession.id, newMode);
+            addToast(res.message || `Mode presensi berhasil dialihkan ke: ${newMode === 'admin_only' ? 'Manual oleh Admin' : 'Mandiri oleh Mahasiswa'}.`, 'success');
+            await loadDashboardData();
+        } catch (err) {
+            addToast(err.message || 'Gagal mengubah mode presensi.', 'error');
+        } finally {
+            setUpdatingMode(false);
         }
     };
 
@@ -765,6 +788,113 @@ PJ MK Statistika Kelas TI25C`;
                                 </div>
                             </div>
 
+                            {/* KONTROL & TOMBOL KHUSUS: MODE PRESENSI (MANDIRI VS MANUAL ADMIN) */}
+                            <div style={{
+                                padding: '14px',
+                                borderRadius: 'var(--radius-lg)',
+                                border: (activeSession.attendance_mode === 'admin_only') 
+                                    ? '1.5px solid rgba(234, 88, 12, 0.45)' 
+                                    : '1.5px solid rgba(16, 185, 129, 0.45)',
+                                backgroundColor: (activeSession.attendance_mode === 'admin_only') 
+                                    ? 'rgba(234, 88, 12, 0.07)' 
+                                    : 'rgba(16, 185, 129, 0.07)',
+                                marginBottom: '16px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        <SettingsIcon size={14} /> Mode Pengisian Presensi
+                                    </span>
+                                    {activeSession.attendance_mode === 'admin_only' ? (
+                                        <span className="badge-status badge-izin" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: 'rgba(234, 88, 12, 0.2)', color: '#c2410c' }}>
+                                            <LockIcon size={12} /> Mode Manual Admin (Mahasiswa Terkunci)
+                                        </span>
+                                    ) : (
+                                        <span className="badge-status badge-hadir" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 700 }}>
+                                            <UserIcon size={12} /> Mandiri oleh Mahasiswa (Tombol Aktif)
+                                        </span>
+                                    )}
+                                </div>
+
+                                <p style={{ fontSize: '0.813rem', color: 'var(--color-text)', lineHeight: '1.45', margin: '0 0 12px 0' }}>
+                                    {activeSession.attendance_mode === 'admin_only' ? (
+                                        <span>
+                                            🔒 <strong>Akses Mahasiswa Dikunci:</strong> Mahasiswa tidak dapat memencet tombol presensi di akun mereka. Presensi hanya diinput/diatur manual oleh Admin melalui tabel presensi di bawah.
+                                        </span>
+                                    ) : (
+                                        <span>
+                                            🟢 <strong>Akses Mahasiswa Terbuka:</strong> Mahasiswa dapat melakukan presensi mandiri dengan menekan tombol <em>"Kirim Presensi Kehadiran"</em> di akun masing-masing.
+                                        </span>
+                                    )}
+                                </p>
+
+                                {/* TOMBOL KHUSUS GANTI MODE */}
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {activeSession.attendance_mode === 'admin_only' ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm"
+                                            onClick={() => handleToggleSessionMode('self')}
+                                            disabled={updatingMode}
+                                            style={{
+                                                flex: '1 1 200px',
+                                                backgroundColor: '#10b981',
+                                                borderColor: '#10b981',
+                                                color: '#ffffff',
+                                                fontWeight: 600,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '6px'
+                                            }}
+                                        >
+                                            <UnlockIcon size={15} />
+                                            {updatingMode ? 'Memperbarui...' : 'Buka Akses Presensi Mahasiswa Mandiri'}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm"
+                                            onClick={() => handleToggleSessionMode('admin_only')}
+                                            disabled={updatingMode}
+                                            style={{
+                                                flex: '1 1 200px',
+                                                backgroundColor: '#ea580c',
+                                                borderColor: '#ea580c',
+                                                color: '#ffffff',
+                                                fontWeight: 600,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '6px'
+                                            }}
+                                        >
+                                            <LockIcon size={15} />
+                                            {updatingMode ? 'Memperbarui...' : 'Kunci Akses: Ubah ke Presensi Manual Admin'}
+                                        </button>
+                                    )}
+
+                                    {activeSession.attendance_mode === 'admin_only' && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary btn-sm"
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                fontSize: '0.813rem'
+                                            }}
+                                            onClick={() => {
+                                                const el = document.getElementById('daftar-kehadiran-sesi');
+                                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                            }}
+                                        >
+                                            <EditIcon size={14} />
+                                            Ubah Presensi Mahasiswa &darr;
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
                             <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
                                 <button
                                     type="button"
@@ -900,6 +1030,54 @@ PJ MK Statistika Kelas TI25C`;
                                 </div>
                             </div>
 
+                            {/* Pilihan Mode Presensi Saat Buka Sesi */}
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label className="form-label" style={{ marginBottom: '8px' }}>
+                                    Mode Pengisian Presensi
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+                                    <div
+                                        onClick={() => setAttendanceMode('self')}
+                                        style={{
+                                            padding: '12px',
+                                            borderRadius: 'var(--radius-md)',
+                                            border: attendanceMode === 'self' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                                            backgroundColor: attendanceMode === 'self' ? 'var(--color-primary-subtle)' : 'var(--color-bg-hover)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '0.875rem', color: attendanceMode === 'self' ? 'var(--color-primary)' : 'var(--color-text)' }}>
+                                            <UserIcon size={16} />
+                                            <span>Mandiri oleh Mahasiswa</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '4px 0 0 0', lineHeight: 1.35 }}>
+                                            Mahasiswa memencet tombol "Kirim Presensi Kehadiran" di akun masing-masing.
+                                        </p>
+                                    </div>
+
+                                    <div
+                                        onClick={() => setAttendanceMode('admin_only')}
+                                        style={{
+                                            padding: '12px',
+                                            borderRadius: 'var(--radius-md)',
+                                            border: attendanceMode === 'admin_only' ? '2px solid #ea580c' : '1px solid var(--color-border)',
+                                            backgroundColor: attendanceMode === 'admin_only' ? 'rgba(234, 88, 12, 0.08)' : 'var(--color-bg-hover)',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '0.875rem', color: attendanceMode === 'admin_only' ? '#ea580c' : 'var(--color-text)' }}>
+                                            <LockIcon size={16} />
+                                            <span>Manual oleh Admin</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: '4px 0 0 0', lineHeight: 1.35 }}>
+                                            Mahasiswa terkunci tidak bisa absen sendiri. Presensi diisi/diubah oleh Admin.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <button
                                 type="submit"
                                 className="btn btn-primary btn-block btn-lg"
@@ -963,7 +1141,7 @@ PJ MK Statistika Kelas TI25C`;
             </div>
 
             {/* Panel Daftar Kehadiran Sesi & Verifikasi Surat Bukti Izin/Sakit */}
-            <div className="card" style={{ marginBottom: '32px' }}>
+            <div id="daftar-kehadiran-sesi" className="card" style={{ marginBottom: '32px' }}>
                 <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
                     <div style={{ flex: '1 1 280px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
