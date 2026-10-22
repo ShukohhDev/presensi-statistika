@@ -61,6 +61,39 @@ router.post('/session/open', authenticateToken, requireAdmin, (req, res) => {
     }
 });
 
+// PUT /api/admin/session/mode - Ganti mode presensi (mandiri mahasiswa vs manual admin)
+router.put('/session/mode', authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const { session_id, attendance_mode } = req.body;
+        const db = getDb();
+        const mode = attendance_mode === 'admin_only' ? 'admin_only' : 'self';
+
+        const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(session_id);
+        if (!session) {
+            return res.status(404).json({ error: 'Sesi presensi tidak ditemukan.' });
+        }
+
+        db.prepare("UPDATE sessions SET attendance_mode = ? WHERE id = ?").run(mode, session_id);
+
+        const modeText = mode === 'admin_only' 
+            ? 'Manual oleh Admin (Akses mahasiswa dikunci)' 
+            : 'Mandiri oleh Mahasiswa (Mahasiswa dapat absen sendiri)';
+
+        // Log aktivitas
+        db.prepare(
+            'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
+        ).run(req.user.id, 'ubah_mode_presensi', `Mengubah mode presensi pertemuan ${session.meeting_number} menjadi: ${modeText}`);
+
+        res.json({ 
+            message: `Mode presensi berhasil diubah ke: ${modeText}`, 
+            attendance_mode: mode 
+        });
+    } catch (err) {
+        console.error('Update session mode error:', err);
+        res.status(500).json({ error: 'Terjadi kesalahan server.' });
+    }
+});
+
 // PUT /api/admin/session/:id - Update nomor pertemuan, materi perkuliahan, dan durasi sesi
 router.put('/session/:id', authenticateToken, requireAdmin, (req, res) => {
     try {
@@ -100,39 +133,6 @@ router.put('/session/:id', authenticateToken, requireAdmin, (req, res) => {
     } catch (err) {
         console.error('Update session error:', err);
         res.status(500).json({ error: 'Terjadi kesalahan server saat memperbarui sesi.' });
-    }
-});
-
-// PUT /api/admin/session/mode - Ganti mode presensi (mandiri mahasiswa vs manual admin)
-router.put('/session/mode', authenticateToken, requireAdmin, (req, res) => {
-    try {
-        const { session_id, attendance_mode } = req.body;
-        const db = getDb();
-        const mode = attendance_mode === 'admin_only' ? 'admin_only' : 'self';
-
-        const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(session_id);
-        if (!session) {
-            return res.status(404).json({ error: 'Sesi presensi tidak ditemukan.' });
-        }
-
-        db.prepare("UPDATE sessions SET attendance_mode = ? WHERE id = ?").run(mode, session_id);
-
-        const modeText = mode === 'admin_only' 
-            ? 'Manual oleh Admin (Akses mahasiswa dikunci)' 
-            : 'Mandiri oleh Mahasiswa (Mahasiswa dapat absen sendiri)';
-
-        // Log aktivitas
-        db.prepare(
-            'INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)'
-        ).run(req.user.id, 'ubah_mode_presensi', `Mengubah mode presensi pertemuan ${session.meeting_number} menjadi: ${modeText}`);
-
-        res.json({ 
-            message: `Mode presensi berhasil diubah ke: ${modeText}`, 
-            attendance_mode: mode 
-        });
-    } catch (err) {
-        console.error('Update session mode error:', err);
-        res.status(500).json({ error: 'Terjadi kesalahan server.' });
     }
 });
 

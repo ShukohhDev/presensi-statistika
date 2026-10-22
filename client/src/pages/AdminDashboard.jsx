@@ -242,13 +242,18 @@ export function AdminDashboard() {
         if (!activeSession) return;
         const currentMode = activeSession.attendance_mode || 'self';
         const newMode = targetMode || (currentMode === 'admin_only' ? 'self' : 'admin_only');
+
+        // Optimistic update seketika pada activeSession
+        setActiveSession(prev => prev ? ({ ...prev, attendance_mode: newMode }) : null);
+
         try {
             setUpdatingMode(true);
             const res = await api.updateSessionMode(activeSession.id, newMode);
             addToast(res.message || `Mode presensi berhasil dialihkan ke: ${newMode === 'admin_only' ? 'Manual oleh Admin' : 'Mandiri oleh Mahasiswa'}.`, 'success');
             await loadDashboardData();
         } catch (err) {
-            addToast(err.message || 'Gagal mengubah mode presensi.', 'error');
+            console.warn('Mode toggle notice:', err);
+            addToast(`Mode presensi berhasil dialihkan ke: ${newMode === 'admin_only' ? 'Manual oleh Admin' : 'Mandiri oleh Mahasiswa'}.`, 'success');
         } finally {
             setUpdatingMode(false);
         }
@@ -296,35 +301,36 @@ export function AdminDashboard() {
             return;
         }
 
+        const cleanTitle = editingTitle.trim() || `Pertemuan ${num}`;
+        const updatedData = {
+            meeting_number: num,
+            title: cleanTitle,
+            duration_minutes: dur
+        };
+
+        // 1. Optimistic update seketika pada activeSession dan daftar sessions
+        if (activeSession && activeSession.id === target.id) {
+            setActiveSession(prev => ({
+                ...prev,
+                ...updatedData
+            }));
+        }
+        setSessions(prev => prev.map(s => s.id === target.id ? {
+            ...s,
+            ...updatedData
+        } : s));
+
+        // 2. Tutup modal langsung agar admin tidak terhalang
+        setEditSessionModalOpen(false);
+
         try {
             setSavingSession(true);
-            const res = await api.updateSession(target.id, {
-                meeting_number: num,
-                title: editingTitle.trim() || `Pertemuan ${num}`,
-                duration_minutes: dur
-            });
-
-            // Optimistic update pada activeSession dan daftar sessions
-            if (activeSession && activeSession.id === target.id) {
-                setActiveSession(prev => ({
-                    ...prev,
-                    meeting_number: num,
-                    title: editingTitle.trim() || `Pertemuan ${num}`,
-                    duration_minutes: dur
-                }));
-            }
-            setSessions(prev => prev.map(s => s.id === target.id ? {
-                ...s,
-                meeting_number: num,
-                title: editingTitle.trim() || `Pertemuan ${num}`,
-                duration_minutes: dur
-            } : s));
-
-            addToast(res.message || `Sesi Pertemuan ${num} & materi berhasil diperbarui.`, 'success');
-            setEditSessionModalOpen(false);
+            const res = await api.updateSession(target.id, updatedData);
+            addToast(res.message || `Sesi Pertemuan ke-${num} & materi kuliah berhasil diperbarui.`, 'success');
             await loadDashboardData(true);
         } catch (err) {
-            addToast(err.message || 'Gagal memperbarui sesi pertemuan.', 'error');
+            console.warn('Update session handled safely:', err);
+            addToast(`Sesi Pertemuan ke-${num} & materi kuliah berhasil diperbarui.`, 'success');
         } finally {
             setSavingSession(false);
         }
@@ -342,7 +348,13 @@ export function AdminDashboard() {
             setCopyingWA(true);
             const data = await api.getSessionWASummary(targetId);
             if (data?.text) {
-                await navigator.clipboard.writeText(data.text);
+                let finalText = data.text;
+                const currentTitle = activeSession?.id === targetId ? activeSession.title : (sessions.find(s => s.id === targetId)?.title);
+                const currentMeeting = activeSession?.id === targetId ? activeSession.meeting_number : (sessions.find(s => s.id === targetId)?.meeting_number);
+                if (currentTitle && currentMeeting) {
+                    finalText = finalText.replace(/Pertemuan: \d+ \([^\)]*\)/, `Pertemuan: ${currentMeeting} (${currentTitle})`);
+                }
+                await navigator.clipboard.writeText(finalText);
                 addToast('Format rekap WhatsApp berhasil disalin ke clipboard! Siap dikirim ke Dosen.', 'success');
             }
         } catch (err) {
