@@ -21,6 +21,7 @@ export function Attendance() {
     const [activeSession, setActiveSession] = useState(null);
     const [userAttendance, setUserAttendance] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [courseInfo, setCourseInfo] = useState(null);
 
@@ -64,16 +65,24 @@ export function Attendance() {
     const timerRef = useRef(null);
     const { addToast } = useToast();
 
-    const fetchSessionData = useCallback(async () => {
+    const fetchSessionData = useCallback(async (silent = false) => {
         try {
-            setLoading(true);
+            if (silent) {
+                setIsSyncing(true);
+            } else {
+                setLoading(true);
+            }
             const data = await api.getActiveSession();
             setActiveSession(data.session);
             setUserAttendance(data.attendance);
         } catch (err) {
             console.error('Error fetching session:', err);
         } finally {
-            setLoading(false);
+            if (silent) {
+                setIsSyncing(false);
+            } else {
+                setLoading(false);
+            }
         }
     }, []);
 
@@ -89,9 +98,11 @@ export function Attendance() {
     }, []);
 
     useEffect(() => {
-        fetchSessionData();
+        fetchSessionData(false);
         fetchCourseInfo();
-        const poll = setInterval(fetchSessionData, 15000);
+        const poll = setInterval(() => {
+            fetchSessionData(true);
+        }, 15000);
         return () => clearInterval(poll);
     }, [fetchSessionData, fetchCourseInfo]);
 
@@ -467,6 +478,24 @@ export function Attendance() {
                                         Sesi Ditutup
                                     </span>
                                 )}
+                                {isSyncing && (
+                                    <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        fontSize: '0.688rem',
+                                        color: 'var(--color-text-muted)'
+                                    }}>
+                                        <span style={{
+                                            width: '5px',
+                                            height: '5px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--color-primary)',
+                                            animation: 'pulse 1.5s infinite ease-in-out'
+                                        }} />
+                                        Sinkronisasi...
+                                    </span>
+                                )}
                             </div>
                             <p style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', marginTop: '2px', margin: 0 }}>
                                 {activeSession ? (
@@ -572,7 +601,9 @@ export function Attendance() {
                                     {timeLeft !== null && (
                                         <div className={`session-timer ${timeLeft < 180 ? 'urgent' : ''}`}>
                                             <ClockIcon size={16} />
-                                            <span>Sisa Waktu: {formatTimer(timeLeft)}</span>
+                                            <span>
+                                                {timeLeft > 0 ? `Sisa Waktu: ${formatTimer(timeLeft)}` : 'Waktu Reguler Habis (Masih Dibuka)'}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -725,11 +756,31 @@ export function Attendance() {
                                         </div>
                                     )}
 
+                                    {timeLeft !== null && timeLeft <= 0 && (
+                                        <div style={{
+                                            marginTop: '16px',
+                                            padding: '10px 14px',
+                                            backgroundColor: 'var(--color-warning-light)',
+                                            border: '1px solid var(--color-warning)',
+                                            borderRadius: 'var(--radius-control)',
+                                            fontSize: '0.813rem',
+                                            color: 'var(--color-warning)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}>
+                                            <ClockIcon size={16} style={{ flexShrink: 0 }} />
+                                            <span>
+                                                Waktu reguler sesi telah habis, namun tombol absensi tetap aktif dan Anda tetap dapat mengirim presensi selama sesi belum ditutup oleh PJ MK.
+                                            </span>
+                                        </div>
+                                    )}
+
                                     <button
                                         type="submit"
                                         className="btn btn-primary btn-block btn-lg"
                                         style={{ marginTop: '24px' }}
-                                        disabled={submitting || (timeLeft !== null && timeLeft <= 0)}
+                                        disabled={submitting}
                                     >
                                         {submitting ? 'Memproses Presensi...' : 'Kirim Presensi Kehadiran'}
                                     </button>

@@ -629,8 +629,8 @@ export function Recap() {
                     <table className="table">
                         <thead>
                             <tr>
-                                <th style={{ width: '48px' }}>No</th>
-                                <th style={{ minWidth: '180px' }}>Nama Mahasiswa</th>
+                                <th className="table-sticky-col-1" style={{ width: '48px' }}>No</th>
+                                <th className="table-sticky-col-2" style={{ minWidth: '180px' }}>Nama Mahasiswa</th>
                                 {sessions.length === 0 ? (
                                     <th style={{ textAlign: 'center' }}>Belum Ada Pertemuan</th>
                                 ) : (
@@ -650,8 +650,8 @@ export function Recap() {
                                 const uas = getUASStatus(item.percentage || 0);
                                 return (
                                     <tr key={item.id}>
-                                        <td style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--color-text-muted)' }}>{index + 1}</td>
-                                        <td style={{ fontWeight: 600 }}>{item.name}</td>
+                                        <td className="table-sticky-col-1" style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--color-text-muted)' }}>{index + 1}</td>
+                                        <td className="table-sticky-col-2" style={{ fontWeight: 600 }}>{item.name}</td>
                                         {sessions.length === 0 ? (
                                             <td style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>-</td>
                                         ) : (

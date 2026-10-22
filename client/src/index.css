@@ -1337,6 +1337,33 @@ input:focus, textarea:focus, select:focus {
   background-color: var(--color-bg-hover);
 }
 
+/* Sticky table columns for responsive recap matrix */
+.table-sticky-col-1 {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--color-bg-card);
+}
+
+.table-sticky-col-2 {
+  position: sticky;
+  left: 48px;
+  z-index: 2;
+  background-color: var(--color-bg-card);
+  box-shadow: 2px 0 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.table thead th.table-sticky-col-1,
+.table thead th.table-sticky-col-2 {
+  z-index: 3;
+  background-color: var(--color-bg-hover);
+}
+
+.table tr:hover td.table-sticky-col-1,
+.table tr:hover td.table-sticky-col-2 {
+  background-color: var(--color-bg-hover);
+}
+
 /* ---- Status Badges (Microsoft Semantic Colors: #107C10, #D83B01, #0078D4, #D13438) ---- */
 .badge-status {
   display: inline-flex;
