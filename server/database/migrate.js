@@ -172,7 +172,7 @@ function migrate() {
         `).run();
     } catch (e) {}
 
-    // Sinkronisasi data mahasiswa (hapus Rangga Aditama, tambah Nisa Amaliyah Zahira & Ahmad Azhar Ibrahim)
+    // Sinkronisasi data mahasiswa (hapus Rangga Aditama & Ahmad Azhar Ibrahim, tambah Nisa Amaliyah Zahira)
     try {
         const bcrypt = require('bcryptjs');
 
@@ -189,10 +189,22 @@ function migrate() {
             console.log('Akun mahasiswa Rangga Aditama berhasil dihapus dari database.');
         }
 
-        // 2. Tambah Nisa Amaliyah Zahira dan Ahmad Azhar Ibrahim jika belum ada
+        // Hapus Ahmad Azhar Ibrahim jika masih ada (karena tidak jadi pindah ke kelas TI25C)
+        const ahmadAzhar = db.prepare("SELECT id FROM users WHERE name = 'Ahmad Azhar Ibrahim' COLLATE NOCASE").get();
+        if (ahmadAzhar) {
+            db.prepare('DELETE FROM user_settings WHERE user_id = ?').run(ahmadAzhar.id);
+            db.prepare('DELETE FROM attendance WHERE user_id = ?').run(ahmadAzhar.id);
+            db.prepare('DELETE FROM tasks WHERE user_id = ?').run(ahmadAzhar.id);
+            db.prepare('DELETE FROM reports WHERE user_id = ?').run(ahmadAzhar.id);
+            db.prepare('DELETE FROM activity_log WHERE user_id = ?').run(ahmadAzhar.id);
+            db.prepare('DELETE FROM notifications WHERE user_id = ?').run(ahmadAzhar.id);
+            db.prepare('DELETE FROM users WHERE id = ?').run(ahmadAzhar.id);
+            console.log('Akun mahasiswa Ahmad Azhar Ibrahim berhasil dihapus dari database.');
+        }
+
+        // 2. Tambah Nisa Amaliyah Zahira jika belum ada
         const newStudents = [
-            { name: 'Nisa Amaliyah Zahira', password: '250511133', role: 'user' },
-            { name: 'Ahmad Azhar Ibrahim', password: '250511108', role: 'user' }
+            { name: 'Nisa Amaliyah Zahira', password: '250511133', role: 'user' }
         ];
 
         for (const student of newStudents) {

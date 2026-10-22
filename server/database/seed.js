@@ -46,7 +46,6 @@ const students = [
     { name: 'Faqih Hidayatus Salam', password: '250511067', role: 'user' },
     { name: 'Shukoh#Dev', password: 'FAFA17052007', role: 'admin' },
     { name: 'Nisa Amaliyah Zahira', password: '250511133', role: 'user' },
-    { name: 'Ahmad Azhar Ibrahim', password: '250511108', role: 'user' },
     { name: 'Asep Fauzan Muhammad Salman Al Baihaqi', password: '250511079', role: 'user' },
     { name: 'Naufal Irsyadillah', password: '250511088', role: 'user' },
     { name: 'Ahmad Fajar', password: '250511091', role: 'user' },
