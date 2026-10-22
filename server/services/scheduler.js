@@ -5,8 +5,64 @@ const { getDb } = require('../config/database');
  * Berjalan otomatis pada background server dengan zona waktu WIB (Asia/Jakarta, UTC+7).
  */
 
+const INDONESIAN_DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const DAY_ALIAS_MAP = {
+    0: ['minggu', 'sunday', 'sun', 'ahad'],
+    1: ['senin', 'monday', 'mon'],
+    2: ['selasa', 'tuesday', 'tue'],
+    3: ['rabu', 'wednesday', 'wed'],
+    4: ['kamis', 'thursday', 'thu'],
+    5: ['jumat', 'jum\'at', 'friday', 'fri'],
+    6: ['sabtu', 'saturday', 'sat']
+};
+
+/**
+ * Konversi string waktu format "HH:mm", "HH.mm", "HH:mm WIB" ke total menit sejak tengah malam (0 - 1439).
+ */
+function parseTimeToMinutes(timeStr, defaultMinutes = 0) {
+    if (!timeStr || typeof timeStr !== 'string') return defaultMinutes;
+    const cleaned = timeStr.trim().replace('.', ':');
+    const match = cleaned.match(/(\d{1,2}):(\d{2})/);
+    if (!match) return defaultMinutes;
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    return (hours * 60) + minutes;
+}
+
+/**
+ * Parsing timestamp SQLite (CURRENT_TIMESTAMP disimpan dalam UTC "YYYY-MM-DD HH:MM:SS").
+ * Mengonversi string ke Date UTC agar kalkulasi expireTime akurat dan tidak bias zona lokal.
+ */
+function parseSqliteTimestamp(ts) {
+    if (!ts) return null;
+    if (ts instanceof Date) return ts;
+    if (typeof ts === 'string') {
+        const cleaned = ts.trim();
+        if (cleaned.includes('Z') || cleaned.includes('+')) {
+            return new Date(cleaned);
+        }
+        return new Date(cleaned.replace(' ', 'T') + 'Z');
+    }
+    return new Date(ts);
+}
+
+/**
+ * Validasi kecocokan hari jadwal secara universal (kebal perbedaan locale OS/Server/Container).
+ */
+function isScheduledDayMatching(dayIndex, targetDayString) {
+    if (!targetDayString) return false;
+    const cleanTarget = targetDayString.trim().toLowerCase();
+    const aliases = DAY_ALIAS_MAP[dayIndex] || [];
+    return aliases.some(alias => cleanTarget.includes(alias));
+}
+
+/**
+ * Dapatkan informasi waktu dan kalender real-time zona waktu WIB (Asia/Jakarta, UTC+7).
+ */
 function getWibInfo() {
     const now = new Date();
+    
+    // Format bagian tanggal dan waktu spesifik Asia/Jakarta
     const formatter = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Asia/Jakarta',
         year: 'numeric',
@@ -21,55 +77,67 @@ function getWibInfo() {
     const map = {};
     parts.forEach(p => (map[p.type] = p.value));
 
-    const dayFormatter = new Intl.DateTimeFormat('id-ID', {
+    // Dapatkan indeks hari dalam zona waktu Asia/Jakarta secara deterministik
+    const weekdayShort = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Jakarta',
-        weekday: 'long'
-    });
-    const dayName = dayFormatter.format(now); // e.g. "Kamis"
+        weekday: 'short'
+    }).format(now);
+    const shortDayMap = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };
+    const dayIndex = shortDayMap[weekdayShort] !== undefined ? shortDayMap[weekdayShort] : now.getUTCDay();
+    const dayName = INDONESIAN_DAYS[dayIndex] || 'Kamis';
+
+    const hour = parseInt(map.hour, 10);
+    const minute = parseInt(map.minute, 10);
+    const currentMinutes = (hour * 60) + minute;
 
     return {
         dateString: `${map.year}-${map.month}-${map.day}`, // YYYY-MM-DD
         timeString: `${map.hour}:${map.minute}`, // HH:mm
-        hour: parseInt(map.hour, 10),
-        minute: parseInt(map.minute, 10),
+        hour,
+        minute,
+        currentMinutes,
+        dayIndex,
         dayName,
         rawDate: now
     };
 }
 
 let schedulerInterval = null;
-let lastProcessedTick = null;
+let isChecking = false;
 
 async function checkSchedulerTick() {
+    // Cegah overlapping concurrent checks
+    if (isChecking) return;
+    isChecking = true;
+
     try {
         const db = getDb();
         const wib = getWibInfo();
-        const tickKey = `${wib.dateString} ${wib.timeString}`;
-
-        // Hindari eksekusi ganda pada menit yang sama
-        if (lastProcessedTick === tickKey) {
-            return;
-        }
-        lastProcessedTick = tickKey;
 
         const course = db.prepare('SELECT * FROM course_info WHERE id = 1').get();
         if (!course) return;
 
         const scheduledDay = course.schedule_day || 'Kamis';
-        const isScheduledDay = wib.dayName.toLowerCase() === scheduledDay.toLowerCase();
+        const isScheduledDay = isScheduledDayMatching(wib.dayIndex, scheduledDay);
 
-        // 1. OTOMASI JAM 00:00 (Pergantian Hari Menuju Hari Kuliah)
-        // Buat pengingat di Kalender Akademik dan notifikasi ke seluruh mahasiswa
-        if (isScheduledDay) {
-            // Periksa apakah agenda kalender untuk hari kuliah ini sudah terbuat
+        const openMins = parseTimeToMinutes(course.auto_open_time, 13 * 60); // 13:00 -> 780
+        let closeMins = parseTimeToMinutes(course.auto_close_time, 15 * 60 + 30); // 15:30 -> 930
+        if (closeMins <= openMins) {
+            closeMins = openMins + 150; // Fallback 2.5 jam jika salah setel
+        }
+
+        const isAutoEnabled = Boolean(course.auto_session_enabled);
+        const isSkipped = Boolean(course.skip_next_session);
+
+        // 1. OTOMASI KALENDER & NOTIFIKASI HARI KULIAH (00:00 WIB ke atas)
+        if (isScheduledDay && isAutoEnabled) {
             const existingCalendar = db.prepare(
                 `SELECT id FROM calendar_events 
                  WHERE event_date = ? AND event_type = 'kuliah' AND title LIKE '%Statistika%'`
             ).get(wib.dateString);
 
-            if (!existingCalendar && course.auto_session_enabled === 1) {
-                if (course.skip_next_session === 1) {
-                    // Jika admin menyetel libur pekan ini
+            if (!existingCalendar) {
+                if (isSkipped) {
                     db.prepare(
                         `INSERT INTO calendar_events (title, description, event_date, event_time, event_type, location, room, building, created_by)
                          VALUES (?, ?, ?, ?, 'kuliah', 'G. Mahdor R. C 306', 'R. C 306', 'G. Mahdor', 1)`
@@ -80,7 +148,6 @@ async function checkSchedulerTick() {
                         '13:00'
                     );
 
-                    // Kirim notifikasi libur ke mahasiswa
                     const students = db.prepare("SELECT id FROM users WHERE role = 'user'").all();
                     const notifStmt = db.prepare(
                         `INSERT INTO notifications (user_id, title, message, type, created_by)
@@ -94,11 +161,9 @@ async function checkSchedulerTick() {
                         );
                     });
                 } else {
-                    // Dapatkan nomor pertemuan berikutnya
                     const maxM = db.prepare('SELECT COALESCE(MAX(meeting_number), 0) as maxM FROM sessions').get().maxM;
                     const nextMeeting = maxM + 1;
 
-                    // Buat acara resmi di kalender
                     db.prepare(
                         `INSERT INTO calendar_events (title, description, event_date, event_time, event_type, location, room, building, created_by)
                          VALUES (?, ?, ?, ?, 'kuliah', 'G. Mahdor R. C 306', 'R. C 306', 'G. Mahdor', 1)`
@@ -109,7 +174,6 @@ async function checkSchedulerTick() {
                         '13:00'
                     );
 
-                    // Kirim notifikasi pengingat ke seluruh mahasiswa
                     const students = db.prepare("SELECT id FROM users WHERE role = 'user'").all();
                     const notifStmt = db.prepare(
                         `INSERT INTO notifications (user_id, title, message, type, created_by)
@@ -123,7 +187,6 @@ async function checkSchedulerTick() {
                         );
                     });
 
-                    // Log aktivitas
                     db.prepare(
                         'INSERT INTO activity_log (user_id, action, description) VALUES (1, ?, ?)'
                     ).run('otomasi_kalender', `Otomatis membuat agenda kalender dan notifikasi Pertemuan ${nextMeeting}`);
@@ -131,41 +194,37 @@ async function checkSchedulerTick() {
             }
         }
 
-        // 2. OTOMASI JAM 13:00 (Buka Sesi Presensi Otomatis)
-        const autoOpenTime = course.auto_open_time || '13:00';
-        const autoCloseTime = course.auto_close_time || '15:45';
-
+        // 2. OTOMASI BUKA SESI PRESENSI
+        // Syarat: Hari sesuai, otomasi aktif, tidak diliburkan, dan waktu WIB berada di antara openMins dan closeMins
         if (
             isScheduledDay &&
-            course.auto_session_enabled === 1 &&
-            course.skip_next_session === 0 &&
-            wib.timeString >= autoOpenTime &&
-            wib.timeString < autoCloseTime
+            isAutoEnabled &&
+            !isSkipped &&
+            wib.currentMinutes >= openMins &&
+            wib.currentMinutes < closeMins
         ) {
-            // Periksa apakah sedang ada sesi yang terbuka
             const currentOpen = db.prepare("SELECT * FROM sessions WHERE status = 'open'").get();
 
-            // Periksa apakah sesi hari ini sudah pernah dibuat/dibuka
-            const sessionToday = db.prepare(
+            // Cek apakah sesi hari ini sudah pernah dibuat dan ditutup sebelumnya di tanggal WIB yang sama
+            const sessionClosedToday = db.prepare(
                 `SELECT * FROM sessions 
-                 WHERE opened_at LIKE ? OR (created_at LIKE ? AND status = 'closed')`
-            ).get(`${wib.dateString}%`, `${wib.dateString}%`);
+                 WHERE date(datetime(opened_at, '+7 hours')) = ? AND status = 'closed'`
+            ).get(wib.dateString);
 
-            if (!currentOpen && !sessionToday) {
+            // Jika belum ada sesi terbuka dan belum pernah ditutup hari ini: Buka Sesi Otomatis!
+            if (!currentOpen && !sessionClosedToday) {
                 const maxM = db.prepare('SELECT COALESCE(MAX(meeting_number), 0) as maxM FROM sessions').get().maxM;
                 const nextMeeting = maxM + 1;
 
-                // Hitung durasi dalam menit (13:00 ke 15:45 = 165 menit, jadwal 13:00-15:30 + toleransi s.d 15:45)
-                const [startH, startM] = autoOpenTime.split(':').map(Number);
-                const [endH, endM] = autoCloseTime.split(':').map(Number);
-                const durationMinutes = Math.max(30, (endH * 60 + endM) - (startH * 60 + startM));
+                // Durasi sesi dalam menit dihitung dari waktu sekarang hingga waktu tutup (minimal 30 menit)
+                const remainingMinutes = Math.max(30, closeMins - wib.currentMinutes);
 
-                const result = db.prepare(
-                    `INSERT INTO sessions (meeting_number, title, status, duration_minutes, opened_at, created_by)
-                     VALUES (?, ?, 'open', ?, CURRENT_TIMESTAMP, 1)`
-                ).run(nextMeeting, `Pertemuan ${nextMeeting}`, durationMinutes);
+                db.prepare(
+                    `INSERT INTO sessions (meeting_number, title, status, duration_minutes, attendance_mode, opened_at, created_by)
+                     VALUES (?, ?, 'open', ?, 'self', CURRENT_TIMESTAMP, 1)`
+                ).run(nextMeeting, `Pertemuan ${nextMeeting}`, remainingMinutes);
 
-                // Kirim notifikasi ke mahasiswa
+                // Kirim notifikasi ke seluruh mahasiswa
                 const students = db.prepare("SELECT id FROM users WHERE role = 'user'").all();
                 const insertNotif = db.prepare(
                     `INSERT INTO notifications (user_id, title, message, type, created_by) VALUES (?, ?, ?, 'reminder', 1)`
@@ -174,36 +233,38 @@ async function checkSchedulerTick() {
                     insertNotif.run(
                         s.id,
                         'Sesi Presensi Dibuka Otomatis',
-                        `Sesi presensi untuk Pertemuan ${nextMeeting} telah dibuka secara otomatis (Jadwal kuliah 13:00 - 15:30 WIB). Toleransi keterlambatan presensi dibuka hingga pukul ${autoCloseTime} WIB.`
+                        `Sesi presensi untuk Pertemuan ${nextMeeting} telah dibuka secara otomatis. Sesi presensi aktif hingga pukul ${course.auto_close_time || '15:30'} WIB.`
                     );
                 });
 
                 // Catat log aktivitas
                 db.prepare(
                     'INSERT INTO activity_log (user_id, action, description) VALUES (1, ?, ?)'
-                ).run('buka_sesi_otomatis', `Sesi presensi pertemuan ${nextMeeting} dibuka otomatis oleh sistem (${autoOpenTime} WIB, toleransi s.d ${autoCloseTime} WIB)`);
+                ).run('buka_sesi_otomatis', `Sesi presensi pertemuan ${nextMeeting} dibuka otomatis oleh sistem (WIB: ${wib.timeString}, durasi ${remainingMinutes} menit)`);
 
                 console.log(`[Scheduler] Sesi presensi pertemuan ${nextMeeting} berhasil dibuka otomatis.`);
             }
         }
 
-        // 3. OTOMASI JAM 15:45 (Tutup Sesi Presensi Otomatis & Hitung Alpha setelah Batas Toleransi)
+        // 3. OTOMASI TUTUP SESI PRESENSI & PERHITUNGAN ALPHA
         const openSession = db.prepare("SELECT * FROM sessions WHERE status = 'open'").get();
         if (openSession) {
             let shouldClose = false;
 
-            // Jika hari ini hari kuliah dan waktu >= jam tutup
-            if (isScheduledDay && wib.timeString >= autoCloseTime) {
-                shouldClose = true;
+            // Periksa kedaluwarsa durasi sesi menggunakan parsing UTC SQLite yang akurat
+            if (openSession.opened_at && openSession.duration_minutes) {
+                const openedDate = parseSqliteTimestamp(openSession.opened_at);
+                if (openedDate) {
+                    const expireMs = openedDate.getTime() + (openSession.duration_minutes * 60 * 1000);
+                    if (Date.now() >= expireMs) {
+                        shouldClose = true;
+                    }
+                }
             }
 
-            // Atau jika durasi sesi telah habis
-            if (openSession.opened_at && openSession.duration_minutes) {
-                const openedTime = new Date(openSession.opened_at).getTime();
-                const expireTime = openedTime + openSession.duration_minutes * 60 * 1000;
-                if (Date.now() >= expireTime) {
-                    shouldClose = true;
-                }
+            // Jika hari ini adalah hari jadwal dan waktu WIB telah melewati jam tutup otomatis
+            if (isScheduledDay && wib.currentMinutes >= closeMins) {
+                shouldClose = true;
             }
 
             if (shouldClose) {
@@ -242,6 +303,8 @@ async function checkSchedulerTick() {
         }
     } catch (err) {
         console.error('[Scheduler Error]:', err);
+    } finally {
+        isChecking = false;
     }
 }
 
@@ -264,16 +327,21 @@ function getSchedulerStatus() {
     const maxM = db.prepare('SELECT COALESCE(MAX(meeting_number), 0) as maxM FROM sessions').get().maxM;
 
     const scheduledDay = course.schedule_day || 'Kamis';
-    const isTodayScheduled = wib.dayName.toLowerCase() === scheduledDay.toLowerCase();
+    const isTodayScheduled = isScheduledDayMatching(wib.dayIndex, scheduledDay);
+
+    const openMins = parseTimeToMinutes(course.auto_open_time, 13 * 60);
+    const closeMins = parseTimeToMinutes(course.auto_close_time, 15 * 60 + 30);
+    const isWithinTimeWindow = isTodayScheduled && (wib.currentMinutes >= openMins && wib.currentMinutes < closeMins);
 
     return {
         currentTimeWib: `${wib.dateString} ${wib.timeString} WIB`,
         currentDay: wib.dayName,
         isTodayScheduled,
+        isWithinTimeWindow,
         autoSessionEnabled: Boolean(course.auto_session_enabled),
         skipNextSession: Boolean(course.skip_next_session),
         autoOpenTime: course.auto_open_time || '13:00',
-        autoCloseTime: course.auto_close_time || '15:45',
+        autoCloseTime: course.auto_close_time || '15:30',
         toleranceMinutes: course.tolerance_minutes || 30,
         activeSession: openSession || null,
         nextMeetingNumber: maxM + 1
@@ -284,5 +352,8 @@ module.exports = {
     startScheduler,
     checkSchedulerTick,
     getSchedulerStatus,
-    getWibInfo
+    getWibInfo,
+    parseTimeToMinutes,
+    parseSqliteTimestamp,
+    isScheduledDayMatching
 };

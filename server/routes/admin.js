@@ -558,8 +558,9 @@ router.put('/course-info', authenticateToken, requireAdmin, (req, res) => {
 });
 
 // GET /api/admin/auto-session/status - Status otomasi presensi
-router.get('/auto-session/status', authenticateToken, requireAdmin, (req, res) => {
+router.get('/auto-session/status', authenticateToken, requireAdmin, async (req, res) => {
     try {
+        await checkSchedulerTick();
         const status = getSchedulerStatus();
         res.json(status);
     } catch (err) {
@@ -601,6 +602,31 @@ router.post('/auto-session/skip-week', authenticateToken, requireAdmin, (req, re
 
         db.prepare('INSERT INTO activity_log (user_id, action, description) VALUES (?, ?, ?)')
             .run(req.user.id, 'skip_pekan', newSkip ? 'Menyetel perkuliahan pekan ini DILIBURKAN' : 'Membatalkan status libur perkuliahan pekan ini');
+
+        res.json({
+            message: newSkip ? 'Perkuliahan pekan ini disetel LIBUR.' : 'Status libur dibatalkan.',
+            skip_next_session: newSkip
+        });
+    } catch (err) {
+        console.error('Skip week error:', err);
+        res.status(500).json({ error: 'Gagal mengubah status libur perkuliahan.' });
+    }
+});
+
+// POST /api/admin/auto-session/check - Jalankan sinkronisasi jadwal sekarang (force check)
+router.post('/auto-session/check', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        await checkSchedulerTick();
+        const status = getSchedulerStatus();
+        res.json({
+            message: 'Pengecekan dan sinkronisasi jadwal presensi berhasil dijalankan.',
+            status
+        });
+    } catch (err) {
+        console.error('Force check scheduler error:', err);
+        res.status(500).json({ error: 'Gagal menjalankan pengecekan jadwal otomasi.' });
+    }
+});
 
 // POST /api/admin/fix-student-names - Perbaiki kapitalisasi nama mahasiswa
 router.post('/fix-student-names', authenticateToken, requireAdmin, (req, res) => {

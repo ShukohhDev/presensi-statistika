@@ -138,14 +138,24 @@ export function Attendance() {
     };
 
     const getScheduleStatus = () => {
+        const parseTimeToMinutes = (timeStr, defaultMinutes = 0) => {
+            if (!timeStr) return defaultMinutes;
+            const match = timeStr.trim().replace('.', ':').match(/(\d{1,2}):(\d{2})/);
+            if (!match) return defaultMinutes;
+            return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+        };
+
         const now = new Date();
-        const dayFormatter = new Intl.DateTimeFormat('id-ID', {
+        const shortDayFormatter = new Intl.DateTimeFormat('en-US', {
             timeZone: 'Asia/Jakarta',
-            weekday: 'long'
+            weekday: 'short'
         });
-        const todayName = dayFormatter.format(now);
-        const scheduledDay = courseInfo?.schedule_day || 'Kamis';
-        const isScheduledDay = todayName.toLowerCase() === scheduledDay.toLowerCase();
+        const shortDay = shortDayFormatter.format(now);
+        const dayMap = { 'Sun': 'minggu', 'Mon': 'senin', 'Tue': 'selasa', 'Wed': 'rabu', 'Thu': 'kamis', 'Fri': 'jumat', 'Sat': 'sabtu' };
+        const currentWibDay = dayMap[shortDay] || 'kamis';
+
+        const scheduledDayRaw = (courseInfo?.schedule_day || 'Kamis').toLowerCase().trim();
+        const isScheduledDay = scheduledDayRaw.includes(currentWibDay) || currentWibDay.includes(scheduledDayRaw);
 
         const timeFormatter = new Intl.DateTimeFormat('en-CA', {
             timeZone: 'Asia/Jakarta',
@@ -158,10 +168,8 @@ export function Attendance() {
 
         const openTime = courseInfo?.auto_open_time || '13:00';
         const closeTime = courseInfo?.auto_close_time || '15:30';
-        const [openH, openM] = openTime.split(':').map(Number);
-        const [closeH, closeM] = closeTime.split(':').map(Number);
-        const openMins = openH * 60 + openM;
-        const closeMins = closeH * 60 + closeM;
+        const openMins = parseTimeToMinutes(openTime, 13 * 60);
+        const closeMins = parseTimeToMinutes(closeTime, 15 * 60 + 30);
 
         if (courseInfo?.skip_next_session) {
             return {

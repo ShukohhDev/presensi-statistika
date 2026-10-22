@@ -129,6 +129,8 @@ export const api = {
         }),
     getAutoSessionStatus: () =>
         request('/api/admin/auto-session/status').catch(() => ({ status: 'running', enabled: true })),
+    checkAutoSessionNow: () =>
+        request('/api/admin/auto-session/check', { method: 'POST' }),
     toggleAutoSession: async (targetState) => {
         try {
             return await request('/api/admin/auto-session/toggle', { method: 'POST' });

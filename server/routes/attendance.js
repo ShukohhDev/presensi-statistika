@@ -3,10 +3,14 @@ const router = express.Router();
 const { getDb } = require('../config/database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { uploadEvidence } = require('../middleware/upload');
+const { checkSchedulerTick } = require('../services/scheduler');
 
 // GET /api/attendance/active-session - Cek sesi aktif
-router.get('/active-session', authenticateToken, (req, res) => {
+router.get('/active-session', authenticateToken, async (req, res) => {
     try {
+        // Trigger scheduler check on demand agar sesi otomatis terbuka langsung saat jadwal tiba
+        await checkSchedulerTick();
+
         const db = getDb();
         const session = db.prepare(
             "SELECT * FROM sessions WHERE status = 'open' ORDER BY id DESC LIMIT 1"

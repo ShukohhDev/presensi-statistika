@@ -98,6 +98,7 @@ export function AdminDashboard() {
     const [skipNextSession, setSkipNextSession] = useState(false);
     const [togglingAuto, setTogglingAuto] = useState(false);
     const [togglingSkip, setTogglingSkip] = useState(false);
+    const [checkingAuto, setCheckingAuto] = useState(false);
     const [copyingMorningWA, setCopyingMorningWA] = useState(false);
     const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
@@ -358,6 +359,20 @@ export function AdminDashboard() {
             addToast(nextSkip ? 'Perkuliahan pekan ini ditandai LIBUR.' : 'Status libur dibatalkan.', 'success');
         } finally {
             setTogglingSkip(false);
+        }
+    };
+
+    // Handler Cek & Sinkronkan Jadwal Otomasi Sekarang
+    const handleCheckAutoSessionNow = async () => {
+        try {
+            setCheckingAuto(true);
+            const res = await api.checkAutoSessionNow();
+            addToast(res.message || 'Pengecekan dan sinkronisasi jadwal berhasil dilakukan.', 'success');
+            await loadDashboardData();
+        } catch (err) {
+            addToast(err.message || 'Gagal menyinkronkan jadwal otomasi.', 'error');
+        } finally {
+            setCheckingAuto(false);
         }
     };
 
@@ -747,6 +762,19 @@ PJ MK Statistika Kelas TI25C`;
                             >
                                 <ClockIcon size={16} />
                                 {skipNextSession ? 'Batalkan Libur Pekan Ini' : 'Liburkan Pekan Ini'}
+                            </button>
+
+                            {/* Tombol Cek & Sinkronkan Jadwal Otomatis */}
+                            <button
+                                type="button"
+                                className="btn btn-secondary btn-sm"
+                                onClick={handleCheckAutoSessionNow}
+                                disabled={checkingAuto}
+                                style={{ flex: '1 1 100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                title="Paksa server untuk memeriksa dan membuka sesi jika waktu jadwal sudah tiba"
+                            >
+                                <RefreshIcon size={15} />
+                                {checkingAuto ? 'Memeriksa & Sinkronisasi...' : 'Sinkronkan / Cek Jadwal Otomatis Sekarang'}
                             </button>
                         </div>
 
