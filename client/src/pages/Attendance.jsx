@@ -174,7 +174,8 @@ export function Attendance() {
         const dayMap = { 'Sun': 'minggu', 'Mon': 'senin', 'Tue': 'selasa', 'Wed': 'rabu', 'Thu': 'kamis', 'Fri': 'jumat', 'Sat': 'sabtu' };
         const currentWibDay = dayMap[shortDay] || 'kamis';
 
-        const scheduledDayRaw = (courseInfo?.schedule_day || 'Kamis').toLowerCase().trim();
+        const scheduledDay = courseInfo?.schedule_day || 'Jumat';
+        const scheduledDayRaw = scheduledDay.toLowerCase().trim();
         const isScheduledDay = scheduledDayRaw.includes(currentWibDay) || currentWibDay.includes(scheduledDayRaw);
 
         const timeFormatter = new Intl.DateTimeFormat('en-CA', {

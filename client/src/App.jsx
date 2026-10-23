@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { Layout } from './components/Layout/Layout';
+import { ErrorBoundary } from './components/Common/ErrorBoundary';
 
 // Pages
 import { Login } from './pages/Login';
@@ -79,10 +80,11 @@ function HomeRedirect() {
 
 function App() {
     return (
-        <AuthProvider>
-            <ThemeProvider>
-                <ToastProvider>
-                    <BrowserRouter>
+        <ErrorBoundary>
+            <AuthProvider>
+                <ThemeProvider>
+                    <ToastProvider>
+                        <BrowserRouter>
                         <Routes>
                             {/* Public Login Route */}
                             <Route path="/login" element={<Login />} />
@@ -136,6 +138,7 @@ function App() {
                 </ToastProvider>
             </ThemeProvider>
         </AuthProvider>
+    </ErrorBoundary>
     );
 }
 
