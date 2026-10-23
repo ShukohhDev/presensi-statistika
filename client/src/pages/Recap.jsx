@@ -668,7 +668,7 @@ export function Recap() {
                                             {item.percentage}%
                                         </td>
                                         <td style={{ textAlign: 'center' }}>
-                                            <span className={`badge-status ${uas.badgeClass}`} style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
+                                            <span className={`badge-status ${uas.badgeClass}`} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
                                                 {uas.type === 'kritis' ? '< 45%' : uas.type === 'waspada' ? 'Waspada' : 'Lolos'}
                                             </span>
                                         </td>

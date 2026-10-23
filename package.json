@@ -6,11 +6,11 @@
   "main": "server/app.js",
   "scripts": {
     "start": "node server/app.js",
-    "dev": "npx -y concurrently \"npm start --prefix server\" \"npm run dev --prefix client\"",
+    "dev": "npx -y concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "server": "npm start --prefix server",
     "client": "npm run dev --prefix client",
     "install:all": "npm install --prefix server && npm install --prefix client",
-    "build": "node -e \"const fs = require('fs'); if (fs.existsSync('client/dist/index.html')) { console.log('Client bundle verified in client/dist'); } else { console.log('Building from source...'); require('child_process').execSync('cd client && npm install && npm run build', {stdio: 'inherit'}); }\""
+    "build": "npm run build --prefix client"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

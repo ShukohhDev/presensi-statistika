@@ -5,10 +5,11 @@ import { api } from '../utils/api';
 const ThemeContext = createContext(null);
 
 export const THEMES = [
-    { id: 'excel-statistika', name: 'Excel & Data Green', swatch: '#107C41' },
+    { id: 'cobalt-slate', name: 'Cobalt & Modern Slate', swatch: '#2563EB' },
     { id: 'ocean', name: 'Power BI Teal', swatch: '#038387' },
     { id: 'midnight', name: 'Academic Navy', swatch: '#004E8C' },
     { id: 'biru-klasik', name: 'Microsoft Blue', swatch: '#0078D4' },
+    { id: 'excel-statistika', name: 'Excel & Data Green', swatch: '#107C41' },
     { id: 'slate', name: 'Slate Steel', swatch: '#2B5B84' },
     { id: 'arctic', name: 'Cyan Analytics', swatch: '#0099BC' },
     { id: 'steel', name: 'Graphite Neutral', swatch: '#5C6B73' },
@@ -16,18 +17,29 @@ export const THEMES = [
 
 export function ThemeProvider({ children }) {
     const { settings, updateSettings } = useAuth();
-    const [theme, setThemeState] = useState('excel-statistika');
+    const [theme, setThemeState] = useState('cobalt-slate');
     const [darkMode, setDarkModeState] = useState(false);
 
-    // Load from settings or localStorage
+    // Load from settings or localStorage (migrate old default theme to cobalt-slate)
     useEffect(() => {
+        let activeTheme = 'cobalt-slate';
         if (settings) {
-            setThemeState(settings.theme || 'excel-statistika');
+            activeTheme = settings.theme || 'cobalt-slate';
+            if (activeTheme === 'biru-klasik' || activeTheme === 'excel-statistika') {
+                activeTheme = 'cobalt-slate';
+                localStorage.setItem('theme', 'cobalt-slate');
+            }
+            setThemeState(activeTheme);
             setDarkModeState(settings.dark_mode === 1);
         } else {
-            const savedTheme = localStorage.getItem('theme') || 'excel-statistika';
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme && savedTheme !== 'biru-klasik' && savedTheme !== 'excel-statistika') {
+                activeTheme = savedTheme;
+            } else {
+                localStorage.setItem('theme', 'cobalt-slate');
+            }
             const savedDark = localStorage.getItem('darkMode') === 'true';
-            setThemeState(savedTheme);
+            setThemeState(activeTheme);
             setDarkModeState(savedDark);
         }
     }, [settings]);

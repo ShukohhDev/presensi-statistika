@@ -387,7 +387,7 @@ Pertanyaan saya: `;
                                             <div style={{ fontSize: '0.813rem', fontWeight: 600, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                                 {m.file_name}
                                             </div>
-                                            <div style={{ fontSize: '0.688rem', color: 'var(--color-text-muted)' }}>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                                                 {formatBytes(m.file_size)}
                                             </div>
                                         </div>

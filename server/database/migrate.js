@@ -212,7 +212,7 @@ function migrate() {
             if (!existing) {
                 const hashedPassword = bcrypt.hashSync(student.password, 10);
                 const res = db.prepare('INSERT INTO users (name, password, role) VALUES (?, ?, ?)').run(student.name, hashedPassword, student.role);
-                db.prepare('INSERT OR IGNORE INTO user_settings (user_id, theme, dark_mode, auto_logout_minutes) VALUES (?, ?, ?, ?)').run(res.lastInsertRowid, 'biru-klasik', 0, 30);
+                db.prepare('INSERT OR IGNORE INTO user_settings (user_id, theme, dark_mode, auto_logout_minutes) VALUES (?, ?, ?, ?)').run(res.lastInsertRowid, 'cobalt-slate', 0, 30);
                 console.log(`Akun mahasiswa ${student.name} (${student.password}) berhasil ditambahkan ke database.`);
             }
         }

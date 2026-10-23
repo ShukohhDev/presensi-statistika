@@ -8,6 +8,7 @@ import { api } from '../../utils/api';
 
 export function Layout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -19,7 +20,11 @@ export function Layout() {
     }, []);
 
     const toggleSidebar = () => {
-        setIsSidebarOpen((prev) => !prev);
+        if (typeof window !== 'undefined' && window.innerWidth >= 1025) {
+            setIsDesktopCollapsed((prev) => !prev);
+        } else {
+            setIsSidebarOpen((prev) => !prev);
+        }
         if (isNotificationsOpen) setIsNotificationsOpen(false);
     };
 
@@ -29,12 +34,13 @@ export function Layout() {
     };
 
     return (
-        <div className="app-layout">
+        <div className={`app-layout ${isDesktopCollapsed ? 'sidebar-collapsed' : ''}`}>
             <AutoLogout />
 
             <Navbar
                 onToggleSidebar={toggleSidebar}
                 isSidebarOpen={isSidebarOpen}
+                isDesktopCollapsed={isDesktopCollapsed}
                 onToggleNotifications={toggleNotifications}
                 unreadCount={unreadCount}
             />

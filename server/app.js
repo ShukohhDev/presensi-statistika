@@ -19,12 +19,20 @@ const PORT = process.env.PORT || 7860;
 // Security Headers (CSP disesuaikan agar font Google & aset statis berjalan mulus)
 app.use(helmet({
     contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false
 }));
 
 // Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(s => s.trim()) : true,
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (process.env.NODE_ENV !== 'production') return callback(null, true);
+        const allowed = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(s => s.trim()) : [];
+        if (allowed.length === 0 || allowed.includes(origin)) return callback(null, true);
+        return callback(new Error('CORS policy violation'));
+    },
     credentials: true
 }));
 app.use(express.json());

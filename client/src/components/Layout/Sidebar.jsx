@@ -38,6 +38,12 @@ export function Sidebar({ isOpen, onClose }) {
     // User photo URL if available
     const photoUrl = user?.profile_photo ? `${API_URL}${user.profile_photo}` : null;
 
+    const handleNavClick = () => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1025) {
+            onClose();
+        }
+    };
+
     return (
         <>
             <div
@@ -85,7 +91,7 @@ export function Sidebar({ isOpen, onClose }) {
                         <NavLink
                             to="/admin"
                             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                            onClick={onClose}
+                            onClick={handleNavClick}
                         >
                             <ShieldIcon size={18} />
                             <span>Dashboard Admin</span>
@@ -94,7 +100,7 @@ export function Sidebar({ isOpen, onClose }) {
                         <NavLink
                             to="/presensi"
                             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                            onClick={onClose}
+                            onClick={handleNavClick}
                         >
                             <CheckCircleIcon size={18} />
                             <span>Presensi</span>
@@ -104,7 +110,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <NavLink
                         to="/rekap"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={onClose}
+                        onClick={handleNavClick}
                     >
                         <BarChartIcon size={18} />
                         <span>Rekap Kehadiran</span>
@@ -113,7 +119,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <NavLink
                         to="/tugas"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={onClose}
+                        onClick={handleNavClick}
                     >
                         <UploadIcon size={18} />
                         <span>{user?.role === 'admin' ? 'Kelola Tugas' : 'Pengumpulan Tugas'}</span>
@@ -123,7 +129,7 @@ export function Sidebar({ isOpen, onClose }) {
                         <NavLink
                             to="/riwayat"
                             className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                            onClick={onClose}
+                            onClick={handleNavClick}
                         >
                             <HistoryIcon size={18} />
                             <span>Riwayat</span>
@@ -133,7 +139,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <NavLink
                         to="/materi"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={onClose}
+                        onClick={handleNavClick}
                     >
                         <BookOpenIcon size={18} />
                         <span>Bank Materi Kuliah</span>
@@ -142,7 +148,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <NavLink
                         to="/kalender"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={onClose}
+                        onClick={handleNavClick}
                     >
                         <CalendarIcon size={18} />
                         <span>Kalender Akademik</span>
@@ -151,7 +157,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <NavLink
                         to="/laporan"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={onClose}
+                        onClick={handleNavClick}
                     >
                         <MessageSquareIcon size={18} />
                         <span>Laporan & Saran</span>
@@ -177,7 +183,7 @@ export function Sidebar({ isOpen, onClose }) {
                     <NavLink
                         to="/profil"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                        onClick={onClose}
+                        onClick={handleNavClick}
                     >
                         <UserIcon size={18} />
                         <span>Profil & Pengaturan</span>
@@ -232,7 +238,7 @@ export function Sidebar({ isOpen, onClose }) {
                         <div style={{ fontSize: '0.781rem', fontWeight: 700, color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             Statistika TI25C
                         </div>
-                        <div style={{ fontSize: '0.688rem', color: 'var(--color-text-muted)' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                             Motto: Ketelitian & Presisi
                         </div>
                     </div>

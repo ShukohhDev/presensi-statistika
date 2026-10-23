@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS calendar_events (
 CREATE TABLE IF NOT EXISTS user_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL UNIQUE,
-    theme TEXT NOT NULL DEFAULT 'biru-klasik',
+    theme TEXT NOT NULL DEFAULT 'cobalt-slate',
     dark_mode INTEGER NOT NULL DEFAULT 0,
     auto_logout_minutes INTEGER NOT NULL DEFAULT 30,
     FOREIGN KEY (user_id) REFERENCES users(id)

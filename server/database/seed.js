@@ -78,7 +78,7 @@ function seed() {
             const result = insertUser.run(student.name, hashedPassword, student.role);
 
             // Buat default settings untuk setiap user
-            insertSettings.run(result.lastInsertRowid, 'biru-klasik', 0, 30);
+            insertSettings.run(result.lastInsertRowid, 'cobalt-slate', 0, 30);
 
             console.log(`  Ditambahkan: ${student.name} (${student.role})`);
         }

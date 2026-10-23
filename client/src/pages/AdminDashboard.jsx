@@ -29,6 +29,7 @@ export function AdminDashboard() {
     const [students, setStudents] = useState([]);
     const [activeSession, setActiveSession] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [adminTab, setAdminTab] = useState('sessions'); // 'sessions' | 'verification' | 'students'
 
     // Form open session
     const [meetingNumber, setMeetingNumber] = useState(1);
@@ -765,8 +766,52 @@ PJ MK Statistika Kelas TI25C`;
                 </div>
             </div>
 
-            {/* Panel Otomasi Jadwal Presensi & Kontrol Cerdas (Admin PJ MK) */}
-            <div className="card" style={{ marginBottom: '24px', border: autoSessionEnabled ? '1px solid rgba(16, 124, 16, 0.4)' : '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+            {/* Navigasi Tab Admin Dashboard (Pemisahan Tugas & Mencegah Cognitive Overload) */}
+            <div className="admin-nav-tabs">
+                <button
+                    type="button"
+                    className={`admin-nav-tab ${adminTab === 'sessions' ? 'active' : ''}`}
+                    onClick={() => setAdminTab('sessions')}
+                >
+                    <ClockIcon size={16} />
+                    <span>Kendali Sesi &amp; Otomasi</span>
+                    {activeSession && (
+                        <span className="badge-status badge-active-session" style={{ fontSize: '0.75rem', padding: '1px 6px' }}>
+                            Sesi Aktif
+                        </span>
+                    )}
+                </button>
+                <button
+                    type="button"
+                    className={`admin-nav-tab ${adminTab === 'verification' ? 'active' : ''}`}
+                    onClick={() => setAdminTab('verification')}
+                >
+                    <ShieldIcon size={16} />
+                    <span>Verifikasi Kehadiran &amp; Bukti Izin/Sakit</span>
+                    {sessionAttendances.some(a => (a.status === 'izin' || a.status === 'sakit') && a.evidence_url) && (
+                        <span style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--color-primary)',
+                            display: 'inline-block'
+                        }} title="Terdapat bukti izin/sakit yang perlu diverifikasi" />
+                    )}
+                </button>
+                <button
+                    type="button"
+                    className={`admin-nav-tab ${adminTab === 'students' ? 'active' : ''}`}
+                    onClick={() => setAdminTab('students')}
+                >
+                    <UserIcon size={16} />
+                    <span>Presensi Manual Mahasiswa</span>
+                </button>
+            </div>
+
+            {adminTab === 'sessions' && (
+                <>
+                    {/* Panel Otomasi Jadwal Presensi & Kontrol Cerdas (Admin PJ MK) */}
+                    <div className="card" style={{ marginBottom: '24px', border: autoSessionEnabled ? '1px solid rgba(16, 124, 16, 0.4)' : '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -1327,8 +1372,11 @@ PJ MK Statistika Kelas TI25C`;
                     </form>
                 </div>
             </div>
+            </>
+            )}
 
             {/* Panel Daftar Kehadiran Sesi & Verifikasi Surat Bukti Izin/Sakit */}
+            {adminTab === 'verification' && (
             <div id="daftar-kehadiran-sesi" className="card" style={{ marginBottom: '32px' }}>
                 <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
                     <div style={{ flex: '1 1 280px' }}>
@@ -1337,11 +1385,11 @@ PJ MK Statistika Kelas TI25C`;
                                 Verifikasi Kehadiran Sesi
                             </h2>
                             {activeSession ? (
-                                <span className="badge-status badge-active-session" style={{ fontSize: '0.688rem' }}>
+                                <span className="badge-status badge-active-session" style={{ fontSize: '0.75rem' }}>
                                     Sedang Aktif (P{activeSession.meeting_number})
                                 </span>
                             ) : sessions.length > 0 ? (
-                                <span className="badge-status badge-info" style={{ fontSize: '0.688rem' }}>
+                                <span className="badge-status badge-info" style={{ fontSize: '0.75rem' }}>
                                     {sessions.length} Sesi Terdata
                                 </span>
                             ) : null}
@@ -1521,8 +1569,10 @@ PJ MK Statistika Kelas TI25C`;
                     </div>
                 )}
             </div>
+            )}
 
             {/* Tabel Daftar Mahasiswa dan Edit Status Kehadiran */}
+            {adminTab === 'students' && (
             <div className="card">
                 <div className="card-header" style={{ flexWrap: 'wrap', gap: '8px' }}>
                     <div>
@@ -1655,6 +1705,7 @@ PJ MK Statistika Kelas TI25C`;
                     </table>
                 </div>
             </div>
+            )}
 
             {/* Modal Ubah Status Kehadiran */}
             <Modal

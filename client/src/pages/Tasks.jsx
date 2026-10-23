@@ -754,7 +754,7 @@ export function Tasks() {
                                             <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
                                                 {a.title}
                                             </h3>
-                                            <span className="badge-status badge-hadir" style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
+                                            <span className="badge-status badge-hadir" style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
                                                 Aktif
                                             </span>
                                         </div>

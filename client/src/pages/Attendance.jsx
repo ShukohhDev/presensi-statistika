@@ -18,9 +18,9 @@ import {
 } from '../components/Common/Icons';
 
 export function Attendance() {
-    const [isPanelOpen, setIsPanelOpen] = useState(true);
     const [activeSession, setActiveSession] = useState(null);
     const [userAttendance, setUserAttendance] = useState(null);
+    const [userSummary, setUserSummary] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -61,6 +61,14 @@ export function Attendance() {
         };
     }, []);
 
+    // Haptic feedback helper
+    const handleSelectOption = (opt) => {
+        setSelectedOption(opt);
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            try { navigator.vibrate(25); } catch {}
+        }
+    };
+
     // Countdown timer
     const [timeLeft, setTimeLeft] = useState(null);
     const timerRef = useRef(null);
@@ -98,14 +106,26 @@ export function Attendance() {
         }
     }, []);
 
+    const fetchAttendanceSummary = useCallback(async () => {
+        try {
+            const data = await api.getAttendanceSummary();
+            if (data?.summary) {
+                setUserSummary(data.summary);
+            }
+        } catch (err) {
+            console.error('Error fetching attendance summary:', err);
+        }
+    }, []);
+
     useEffect(() => {
         fetchSessionData(false);
         fetchCourseInfo();
+        fetchAttendanceSummary();
         const poll = setInterval(() => {
             fetchSessionData(true);
         }, 15000);
         return () => clearInterval(poll);
-    }, [fetchSessionData, fetchCourseInfo]);
+    }, [fetchSessionData, fetchCourseInfo, fetchAttendanceSummary]);
 
     // Timer calculation
     useEffect(() => {
@@ -260,11 +280,15 @@ export function Attendance() {
             }
 
             await api.submitAttendance(formData);
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                try { navigator.vibrate([40, 30, 40]); } catch {}
+            }
             addToast('Presensi Anda berhasil dicatat.', 'success');
             removeFile();
             setNote('');
             triggerSticker();
             await fetchSessionData();
+            await fetchAttendanceSummary();
         } catch (err) {
             addToast(err.message || 'Gagal mengirim presensi.', 'error');
         } finally {
@@ -291,148 +315,44 @@ export function Attendance() {
 
     return (
         <div>
-            <div className="page-header">
-                <h1 className="page-title">Halaman Presensi</h1>
-                <p className="page-subtitle">Pencatatan kehadiran perkuliahan Mata Kuliah Statistika - Kelas TI25C</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                    <h1 className="page-title">Halaman Presensi</h1>
+                    <p className="page-subtitle">Pencatatan kehadiran perkuliahan Mata Kuliah Statistika - Kelas TI25C</p>
+                </div>
+                {userSummary && (
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-control)',
+                        backgroundColor: 'var(--color-bg-card)',
+                        border: '1px solid var(--color-border)',
+                        fontSize: '0.813rem',
+                        boxShadow: 'var(--shadow-xs)'
+                    }}>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Kehadiran:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--color-primary)', fontFamily: 'var(--font-mono)' }}>
+                            {userSummary.percentage}%
+                        </span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>
+                            ({userSummary.hadir} Hadir)
+                        </span>
+                        <span className={`badge-status ${userSummary.percentage >= 45 ? 'badge-hadir' : 'badge-alpha'}`} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
+                            {userSummary.percentage >= 45 ? 'Lolos Syarat UAS' : 'Kritis (<45%)'}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {/* Kartu Informasi Perkuliahan & Dosen Pengampu */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid var(--color-border)', paddingBottom: '14px', marginBottom: '16px' }}>
+            <div className="attendance-panel">
+                {/* Panel Mata Kuliah Resmi (Header Tetap, Selalu Terbuka) */}
+                <div className="attendance-subject-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                             width: '40px',
                             height: '40px',
-                            borderRadius: 'var(--radius-md)',
-                            backgroundColor: 'var(--color-bg-hover)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'var(--color-primary)'
-                        }}>
-                            <BookOpenIcon size={22} />
-                        </div>
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, margin: 0 }}>Mata Kuliah Statistika</h2>
-                                <span className="badge-status badge-hadir" style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
-                                    Kelas TI25C - 3 SKS
-                                </span>
-                            </div>
-                            <p style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', margin: '2px 0 0 0' }}>
-                                Program Studi Teknik Informatika - Kelas TI25C
-                            </p>
-                        </div>
-                    </div>
-                    {courseInfo?.whatsapp_group_link && (
-                        <a
-                            href={courseInfo.whatsapp_group_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-secondary btn-sm"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                        >
-                            <WhatsAppIcon size={16} />
-                            Grup WhatsApp Kelas
-                            <ExternalLinkIcon size={14} />
-                        </a>
-                    )}
-                </div>
-
-                <div className="course-meta-grid">
-                    <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ fontSize: '0.688rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Dosen Pengampu
-                            </div>
-                            <div style={{ fontWeight: 600, color: 'var(--color-text)', marginTop: '4px' }}>
-                                {courseInfo?.lecturer_name || 'RIFQI HIDAYAT'}
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                                NIP: {courseInfo?.lecturer_nip || '0401088701'}
-                            </div>
-                        </div>
-                        {(courseInfo?.lecturer_phone || '081282394648') && (
-                            <div style={{ marginTop: '10px' }}>
-                                <a
-                                    href={`https://wa.me/${(courseInfo?.lecturer_phone || '081282394648').trim().replace(/[^0-9]/g, '').replace(/^0/, '62')}?text=${encodeURIComponent('Halo Pak Rifqi Hidayat, mohon maaf mengganggu waktunya. Saya mahasiswa kelas TI25C...')}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-secondary btn-xs"
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        fontSize: '0.75rem',
-                                        color: '#25D366',
-                                        borderColor: 'rgba(37, 211, 102, 0.3)',
-                                        backgroundColor: 'rgba(37, 211, 102, 0.08)',
-                                        padding: '4px 10px',
-                                        borderRadius: 'var(--radius-sm)',
-                                        textDecoration: 'none',
-                                        fontWeight: 600
-                                    }}
-                                    title="Hubungi Dosen Pengampu via WhatsApp (081282394648)"
-                                >
-                                    <WhatsAppIcon size={14} />
-                                    <span>Hubungi Dosen</span>
-                                    <ExternalLinkIcon size={12} />
-                                </a>
-                            </div>
-                        )}
-                    </div>
-
-                    <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                        <div style={{ fontSize: '0.688rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Jadwal Perkuliahan
-                        </div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-text)', marginTop: '4px' }}>
-                            {courseInfo?.schedule_day || 'Kamis'}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            {(!courseInfo?.schedule_time || courseInfo?.schedule_time.includes('08:00')) ? '13:00 - 15:30 WIB' : courseInfo.schedule_time}
-                        </div>
-                    </div>
-
-                    <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                        <div style={{ fontSize: '0.688rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Ruang Kuliah
-                        </div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-text)', marginTop: '4px' }}>
-                            {courseInfo?.room || 'G. Mahdor R. C 306'}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            Perkuliahan Tatap Muka
-                        </div>
-                    </div>
-
-                    <div style={{ padding: '12px 14px', background: 'var(--color-bg-hover)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                        <div style={{ fontSize: '0.688rem', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            Penanggung Jawab (PJ MK)
-                        </div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-primary)', marginTop: '4px' }}>
-                            Faqih Hidayatus Salam
-                        </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                            NIM: 250511067 (Kelas TI25C)
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="attendance-panel">
-                {/* Panel Mata Kuliah Resmi */}
-                <div
-                    className={`attendance-subject ${isPanelOpen ? 'expanded' : ''}`}
-                    onClick={() => setIsPanelOpen(!isPanelOpen)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsPanelOpen(!isPanelOpen); }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
                             borderRadius: 'var(--radius-sm)',
                             backgroundColor: 'var(--color-primary-light)',
                             border: '1px solid var(--color-border)',
@@ -442,12 +362,12 @@ export function Attendance() {
                             color: 'var(--color-primary)',
                             flexShrink: 0
                         }}>
-                            <BookOpenIcon size={20} />
+                            <BookOpenIcon size={22} />
                         </div>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <h3>Mata Kuliah Statistika</h3>
-                                <span className="badge-status badge-info" style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
+                                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, margin: 0 }}>Mata Kuliah Statistika</h2>
+                                <span className="badge-status badge-info" style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
                                     TI25C
                                 </span>
                                 {activeSession ? (
@@ -460,7 +380,7 @@ export function Attendance() {
                                         backgroundColor: 'var(--color-success-light)',
                                         color: 'var(--color-success)',
                                         border: '1px solid rgba(22, 163, 74, 0.2)',
-                                        fontSize: '0.688rem',
+                                        fontSize: '0.75rem',
                                         fontWeight: 600
                                     }}>
                                         <span style={{
@@ -481,7 +401,7 @@ export function Attendance() {
                                         backgroundColor: 'var(--color-bg-card)',
                                         color: 'var(--color-text-muted)',
                                         border: '1px solid var(--color-border)',
-                                        fontSize: '0.688rem',
+                                        fontSize: '0.75rem',
                                         fontWeight: 500
                                     }}>
                                         Sesi Ditutup
@@ -492,7 +412,7 @@ export function Attendance() {
                                         display: 'inline-flex',
                                         alignItems: 'center',
                                         gap: '4px',
-                                        fontSize: '0.688rem',
+                                        fontSize: '0.75rem',
                                         color: 'var(--color-text-muted)'
                                     }}>
                                         <span style={{
@@ -515,13 +435,23 @@ export function Attendance() {
                             </p>
                         </div>
                     </div>
-                    <div className="arrow-icon">
-                        <ChevronDownIcon size={18} />
-                    </div>
+                    {courseInfo?.whatsapp_group_link && (
+                        <a
+                            href={courseInfo.whatsapp_group_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary btn-xs"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 600, color: '#107C41' }}
+                            title="Buka Grup WhatsApp Kelas TI25C"
+                        >
+                            <WhatsAppIcon size={14} />
+                            <span>Grup WhatsApp</span>
+                            <ExternalLinkIcon size={12} />
+                        </a>
+                    )}
                 </div>
 
-                {isPanelOpen && (
-                    <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: '20px' }}>
                         {loading ? (
                             <div style={{ padding: '8px 0' }}>
                                 <div className="skeleton skeleton-title" style={{ width: '45%', height: '18px' }} />
@@ -709,7 +639,7 @@ export function Attendance() {
                                         <button
                                             type="button"
                                             className={`attendance-option attendance-option-hadir ${selectedOption === 'hadir' ? 'selected' : ''}`}
-                                            onClick={() => setSelectedOption('hadir')}
+                                            onClick={() => handleSelectOption('hadir')}
                                         >
                                             <div className="option-icon-box">
                                                 <CheckCircleIcon size={20} />
@@ -717,7 +647,7 @@ export function Attendance() {
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                                     <span style={{ fontWeight: 700, fontSize: '0.925rem' }}>Masuk (Hadir)</span>
-                                                    <span className="badge-status badge-hadir" style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
+                                                    <span className="badge-status badge-hadir" style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
                                                         Tatap Muka
                                                     </span>
                                                 </div>
@@ -732,7 +662,7 @@ export function Attendance() {
                                         <button
                                             type="button"
                                             className={`attendance-option attendance-option-izin ${selectedOption === 'izin' ? 'selected' : ''}`}
-                                            onClick={() => setSelectedOption('izin')}
+                                            onClick={() => handleSelectOption('izin')}
                                         >
                                             <div className="option-icon-box">
                                                 <ClockIcon size={20} />
@@ -740,7 +670,7 @@ export function Attendance() {
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                                     <span style={{ fontWeight: 700, fontSize: '0.925rem' }}>Izin</span>
-                                                    <span className="badge-status badge-izin" style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
+                                                    <span className="badge-status badge-izin" style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
                                                         Keterangan Tertulis
                                                     </span>
                                                 </div>
@@ -755,7 +685,7 @@ export function Attendance() {
                                         <button
                                             type="button"
                                             className={`attendance-option attendance-option-sakit ${selectedOption === 'sakit' ? 'selected' : ''}`}
-                                            onClick={() => setSelectedOption('sakit')}
+                                            onClick={() => handleSelectOption('sakit')}
                                         >
                                             <div className="option-icon-box">
                                                 <AlertCircleIcon size={20} />
@@ -763,7 +693,7 @@ export function Attendance() {
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                                     <span style={{ fontWeight: 700, fontSize: '0.925rem' }}>Sakit</span>
-                                                    <span className="badge-status badge-sakit" style={{ fontSize: '0.688rem', padding: '2px 8px' }}>
+                                                    <span className="badge-status badge-sakit" style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
                                                         Surat Dokter
                                                     </span>
                                                 </div>
@@ -919,7 +849,77 @@ export function Attendance() {
                             })()
                         )}
                     </div>
-                )}
+            </div>
+
+            {/* Kartu Informasi Perkuliahan & Dosen Pengampu (Secondary Reference) */}
+            <div className="card" style={{ maxWidth: '760px', margin: '0 auto 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)' }}>
+                            Informasi Akademik & Pengampu
+                        </span>
+                        <span className="badge-status badge-info" style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
+                            Statistika TI25C
+                        </span>
+                    </div>
+                    {courseInfo?.whatsapp_group_link && (
+                        <a
+                            href={courseInfo.whatsapp_group_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: '0.75rem', fontWeight: 600, color: '#107C41', display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
+                        >
+                            <WhatsAppIcon size={14} />
+                            <span>Grup WA Kelas</span>
+                        </a>
+                    )}
+                </div>
+
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                    gap: '12px'
+                }}>
+                    <div className="course-meta-item">
+                        <div className="course-meta-label">Dosen Pengampu</div>
+                        <div className="course-meta-val">
+                            {courseInfo?.lecturer_name || 'Dr. H. Ade Mubarok, S.Kom., M.T.'}
+                        </div>
+                        <div className="course-meta-sub">
+                            {courseInfo?.lecturer_title || 'Dosen Pengampu Mata Kuliah'}
+                        </div>
+                    </div>
+
+                    <div className="course-meta-item">
+                        <div className="course-meta-label">Jadwal Perkuliahan</div>
+                        <div className="course-meta-val">
+                            {courseInfo?.schedule_day || 'Jumat'}
+                        </div>
+                        <div className="course-meta-sub">
+                            {courseInfo?.schedule_time || '13:00 - 15:30 WIB'}
+                        </div>
+                    </div>
+
+                    <div className="course-meta-item">
+                        <div className="course-meta-label">Ruang Kuliah</div>
+                        <div className="course-meta-val">
+                            {courseInfo?.room || 'G. Mahdor R. C 306'}
+                        </div>
+                        <div className="course-meta-sub">
+                            Perkuliahan Tatap Muka
+                        </div>
+                    </div>
+
+                    <div className="course-meta-item">
+                        <div className="course-meta-label">Penanggung Jawab (PJ MK)</div>
+                        <div className="course-meta-val" style={{ color: 'var(--color-primary)' }}>
+                            Faqih Hidayatus Salam
+                        </div>
+                        <div className="course-meta-sub">
+                            NIM: 250511067 (Kelas TI25C)
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Pop-up Animasi Stiker Perayaan Presensi - WOKEE PRESENSI MASUK BOSKYUH */}

@@ -367,7 +367,7 @@ export function Reports() {
                                                         <button
                                                             type="button"
                                                             className={`btn btn-sm ${r.status === 'baru' ? 'btn-primary' : 'btn-ghost'}`}
-                                                            style={{ fontSize: '0.688rem', padding: '2px 6px', height: 'auto', lineHeight: '1.2' }}
+                                                            style={{ fontSize: '0.75rem', padding: '3px 8px', height: 'auto', lineHeight: '1.2' }}
                                                             onClick={() => handleQuickUpdateStatus(r.id, 'baru')}
                                                             title="Ubah status laporan ke Baru"
                                                         >
@@ -376,7 +376,7 @@ export function Reports() {
                                                         <button
                                                             type="button"
                                                             className={`btn btn-sm ${r.status === 'diproses' ? 'btn-primary' : 'btn-ghost'}`}
-                                                            style={{ fontSize: '0.688rem', padding: '2px 6px', height: 'auto', lineHeight: '1.2' }}
+                                                            style={{ fontSize: '0.75rem', padding: '3px 8px', height: 'auto', lineHeight: '1.2' }}
                                                             onClick={() => handleQuickUpdateStatus(r.id, 'diproses')}
                                                             title="Ubah status laporan ke Sedang Diproses"
                                                         >
@@ -385,7 +385,7 @@ export function Reports() {
                                                         <button
                                                             type="button"
                                                             className={`btn btn-sm ${r.status === 'selesai' ? 'btn-primary' : 'btn-ghost'}`}
-                                                            style={{ fontSize: '0.688rem', padding: '2px 6px', height: 'auto', lineHeight: '1.2' }}
+                                                            style={{ fontSize: '0.75rem', padding: '3px 8px', height: 'auto', lineHeight: '1.2' }}
                                                             onClick={() => handleQuickUpdateStatus(r.id, 'selesai')}
                                                             title="Ubah status laporan ke Selesai / Teratasi"
                                                         >

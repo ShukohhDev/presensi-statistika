@@ -62,7 +62,7 @@ function initDb() {
                 for (const student of list) {
                     const hashedPassword = bcrypt.hashSync(student.password, 10);
                     const res = insertUser.run(student.name, hashedPassword, student.role);
-                    insertSettings.run(res.lastInsertRowid, 'biru-klasik', 0, 30);
+                    insertSettings.run(res.lastInsertRowid, 'cobalt-slate', 0, 30);
                 }
             });
 

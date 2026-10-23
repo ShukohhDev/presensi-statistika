@@ -277,7 +277,7 @@ export function Profile() {
                                         borderRadius: 'var(--radius-full)',
                                         background: 'rgba(0, 0, 0, 0.45)',
                                         color: '#FFFFFF',
-                                        fontSize: '0.688rem',
+                                        fontSize: '0.75rem',
                                         fontWeight: 600,
                                         zIndex: 2
                                     }}
@@ -369,19 +369,19 @@ export function Profile() {
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center', marginTop: '12px' }}>
                                         <div style={{ padding: '8px', backgroundColor: 'var(--color-success-light)', borderRadius: 'var(--radius-md)' }}>
                                             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>{summary.hadir}</div>
-                                            <div style={{ fontSize: '0.688rem', color: 'var(--color-success)' }}>Hadir</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-success)' }}>Hadir</div>
                                         </div>
                                         <div style={{ padding: '8px', backgroundColor: 'var(--color-warning-light)', borderRadius: 'var(--radius-md)' }}>
                                             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-warning)', fontFamily: 'var(--font-mono)' }}>{summary.izin}</div>
-                                            <div style={{ fontSize: '0.688rem', color: 'var(--color-warning)' }}>Izin</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-warning)' }}>Izin</div>
                                         </div>
                                         <div style={{ padding: '8px', backgroundColor: 'var(--color-info-light)', borderRadius: 'var(--radius-md)' }}>
                                             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-info)', fontFamily: 'var(--font-mono)' }}>{summary.sakit}</div>
-                                            <div style={{ fontSize: '0.688rem', color: 'var(--color-info)' }}>Sakit</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-info)' }}>Sakit</div>
                                         </div>
                                         <div style={{ padding: '8px', backgroundColor: 'var(--color-danger-light)', borderRadius: 'var(--radius-md)' }}>
                                             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-danger)', fontFamily: 'var(--font-mono)' }}>{summary.alpha}</div>
-                                            <div style={{ fontSize: '0.688rem', color: 'var(--color-danger)' }}>Alpha</div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-danger)' }}>Alpha</div>
                                         </div>
                                     </div>
 
@@ -454,10 +454,10 @@ export function Profile() {
                         </button>
                     </div>
 
-                    {/* Pilihan 7 Tema Warna */}
+                    {/* Pilihan Tema Warna */}
                     <div style={{ marginBottom: '24px' }}>
                         <div className="form-label" style={{ marginBottom: '12px' }}>
-                            Pilihan Tema Warna (7 Pilihan)
+                            Pilihan Tema Warna ({THEMES?.length || 8} Pilihan)
                         </div>
 
                         <div className="theme-grid">

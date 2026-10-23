@@ -48,7 +48,7 @@ router.put('/settings', authenticateToken, (req, res) => {
         } else {
             db.prepare(
                 'INSERT INTO user_settings (user_id, theme, dark_mode, auto_logout_minutes) VALUES (?, ?, ?, ?)'
-            ).run(req.user.id, theme || 'biru-klasik', dark_mode || 0, auto_logout_minutes || 30);
+            ).run(req.user.id, theme || 'cobalt-slate', dark_mode || 0, auto_logout_minutes || 30);
         }
 
         res.json({ message: 'Pengaturan berhasil disimpan.' });
