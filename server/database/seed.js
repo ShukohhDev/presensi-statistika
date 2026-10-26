@@ -51,6 +51,8 @@ const students = [
     { name: 'Ahmad Fajar', password: '250511091', role: 'user' },
     { name: 'Fadilah Wildan Firdaus', password: '250511125', role: 'user' },
     { name: 'Andhika Prasetia Nugraha Putra', password: '250511103', role: 'user' },
+    { name: 'Rangga Aditama', password: '250511150', role: 'user' },
+    { name: 'Falih Arifin', password: '250511044', role: 'user' },
 ];
 
 function seed() {

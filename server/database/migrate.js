@@ -172,22 +172,9 @@ function migrate() {
         `).run();
     } catch (e) {}
 
-    // Sinkronisasi data mahasiswa (hapus Rangga Aditama & Ahmad Azhar Ibrahim, tambah Nisa Amaliyah Zahira)
+    // Sinkronisasi data mahasiswa
     try {
         const bcrypt = require('bcryptjs');
-
-        // 1. Hapus Rangga Aditama jika masih ada
-        const rangga = db.prepare("SELECT id FROM users WHERE name = 'Rangga Aditama'").get();
-        if (rangga) {
-            db.prepare('DELETE FROM user_settings WHERE user_id = ?').run(rangga.id);
-            db.prepare('DELETE FROM attendance WHERE user_id = ?').run(rangga.id);
-            db.prepare('DELETE FROM tasks WHERE user_id = ?').run(rangga.id);
-            db.prepare('DELETE FROM reports WHERE user_id = ?').run(rangga.id);
-            db.prepare('DELETE FROM activity_log WHERE user_id = ?').run(rangga.id);
-            db.prepare('DELETE FROM notifications WHERE user_id = ?').run(rangga.id);
-            db.prepare('DELETE FROM users WHERE id = ?').run(rangga.id);
-            console.log('Akun mahasiswa Rangga Aditama berhasil dihapus dari database.');
-        }
 
         // Hapus Ahmad Azhar Ibrahim jika masih ada (karena tidak jadi pindah ke kelas TI25C)
         const ahmadAzhar = db.prepare("SELECT id FROM users WHERE name = 'Ahmad Azhar Ibrahim' COLLATE NOCASE").get();
@@ -202,13 +189,15 @@ function migrate() {
             console.log('Akun mahasiswa Ahmad Azhar Ibrahim berhasil dihapus dari database.');
         }
 
-        // 2. Tambah Nisa Amaliyah Zahira jika belum ada
+        // Tambah mahasiswa baru jika belum ada
         const newStudents = [
-            { name: 'Nisa Amaliyah Zahira', password: '250511133', role: 'user' }
+            { name: 'Nisa Amaliyah Zahira', password: '250511133', role: 'user' },
+            { name: 'Rangga Aditama', password: '250511150', role: 'user' },
+            { name: 'Falih Arifin', password: '250511044', role: 'user' }
         ];
 
         for (const student of newStudents) {
-            const existing = db.prepare('SELECT id FROM users WHERE name = ?').get(student.name);
+            const existing = db.prepare('SELECT id FROM users WHERE name = ? COLLATE NOCASE').get(student.name);
             if (!existing) {
                 const hashedPassword = bcrypt.hashSync(student.password, 10);
                 const res = db.prepare('INSERT INTO users (name, password, role) VALUES (?, ?, ?)').run(student.name, hashedPassword, student.role);
@@ -217,7 +206,7 @@ function migrate() {
             }
         }
 
-        // 3. Standarisasi huruf kapital nama mahasiswa agar berurutan abjad dengan benar
+        // Standarisasi huruf kapital nama mahasiswa agar berurutan abjad dengan benar
         const capitalFixes = [
             { oldName: 'ahmad fajar', newName: 'Ahmad Fajar' },
             { oldName: 'dafa rizki', newName: 'Dafa Rizki' },
