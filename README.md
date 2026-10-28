@@ -2,7 +2,7 @@
 
 Website sistem presensi, pengumpulan tugas, dan repositori materi perkuliahan untuk mahasiswa kelas TI25C pada Mata Kuliah Statistika.
 
-🌐 **Tautan Resmi Website**: [https://presensi-statistika-ti25c.shukohh21.workers.dev](https://presensi-statistika-ti25c.shukohh21.workers.dev)
+🌐 **Tautan Resmi Website**: [https://presensi-statistika-ti25c.shukohdev.web.id](https://presensi-statistika-ti25c.shukohdev.web.id)
 
 ---
 
