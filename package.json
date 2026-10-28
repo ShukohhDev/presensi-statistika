@@ -4,6 +4,10 @@
   "private": true,
   "description": "Sistem Presensi Mahasiswa Kelas TI25C - Statistika",
   "main": "server/app.js",
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "start": "node server/app.js",
     "dev": "npx -y concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
