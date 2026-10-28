@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "presensi-statistika",
+  "name": "presensi-statistika-ti25c",
   "compatibility_date": "2024-11-01",
   "main": "worker.js",
   "assets": {
