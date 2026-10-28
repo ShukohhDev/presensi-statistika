@@ -29,6 +29,9 @@
     "uuid": "^9.0.0",
     "xlsx": "^0.18.5"
   },
+  "devDependencies": {
+    "wrangler": "^3.109.0"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
