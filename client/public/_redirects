@@ -1,3 +1,0 @@
-# Fallback routes for other hosts (Cloudflare uses functions/ and 200.html)
-/api/*  https://presensi-statistika-ti25c-production.up.railway.app/api/:splat  200
-/uploads/*  https://presensi-statistika-ti25c-production.up.railway.app/uploads/:splat  200
