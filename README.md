@@ -2,7 +2,7 @@
 
 Website sistem presensi, pengumpulan tugas, dan repositori materi perkuliahan untuk mahasiswa kelas TI25C pada Mata Kuliah Statistika.
 
-Tautan Resmi: [https://presensi-statistika-ti25c-production.up.railway.app](https://presensi-statistika-ti25c-production.up.railway.app)
+🌐 **Tautan Resmi Website**: [https://presensi-statistika-ti25c.shukohh21.workers.dev](https://presensi-statistika-ti25c.shukohh21.workers.dev)
 
 ---
 
@@ -42,7 +42,7 @@ Tautan Resmi: [https://presensi-statistika-ti25c-production.up.railway.app](http
 - **Frontend**: React.js, Vite, Vanilla CSS Design System
 - **Backend**: Node.js, Express.js
 - **Database**: SQLite (better-sqlite3)
-- **Deployment**: Railway Cloud Platform
+- **Deployment**: Cloudflare (Frontend Web, Edge CDN & Reverse Proxy), Railway (Backend Server & Database)
 
 ---
 
