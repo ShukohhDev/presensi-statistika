@@ -1107,9 +1107,18 @@ PJ MK Statistika Kelas TI25C`;
                                                 fontSize: '0.813rem'
                                             }}
                                             onClick={() => {
-                                                const el = document.getElementById('daftar-kehadiran-sesi');
-                                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                                setAdminTab('verification');
+                                                if (activeSession) {
+                                                    setSelectedVerificationSessionId(activeSession.id);
+                                                    setTargetSessionId(activeSession.id);
+                                                    loadSessionAttendances(activeSession.id);
+                                                }
+                                                setTimeout(() => {
+                                                    const el = document.getElementById('daftar-kehadiran-sesi');
+                                                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                }, 100);
                                             }}
+                                            title="Buka daftar kehadiran sesi ini untuk mengubah status kehadiran mahasiswa"
                                         >
                                             <EditIcon size={14} />
                                             Ubah Presensi Mahasiswa &darr;
@@ -1470,11 +1479,14 @@ PJ MK Statistika Kelas TI25C`;
                             type="button"
                             className="btn btn-primary btn-sm"
                             onClick={() => {
-                                const inputEl = document.getElementById('meetingNumber');
-                                if (inputEl) {
-                                    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    inputEl.focus();
-                                }
+                                setAdminTab('sessions');
+                                setTimeout(() => {
+                                    const inputEl = document.getElementById('meetingNumber');
+                                    if (inputEl) {
+                                        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        inputEl.focus();
+                                    }
+                                }, 100);
                             }}
                         >
                             Buka Pertemuan 1 Sekarang &rarr;
@@ -1485,20 +1497,67 @@ PJ MK Statistika Kelas TI25C`;
                         <p>Belum ada catatan presensi untuk sesi ini.</p>
                     </div>
                 ) : (
-                    <div className="table-container">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th style={{ width: '48px' }}>No</th>
-                                    <th>Nama Mahasiswa</th>
-                                    <th>Status</th>
-                                    <th>Keterangan / Catatan</th>
-                                    <th>Surat Bukti</th>
-                                    <th style={{ textAlign: 'right' }}>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sessionAttendances.map((att, index) => (
+                    <>
+                        {/* Bar Pencarian Cepat Mahasiswa */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
+                            <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: '360px' }}>
+                                <input
+                                    type="text"
+                                    className="form-input form-input-sm"
+                                    placeholder="Cari nama mahasiswa..."
+                                    value={studentSearchQuery}
+                                    onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                    style={{ paddingLeft: '32px', paddingRight: studentSearchQuery ? '28px' : '10px' }}
+                                />
+                                <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}>
+                                    <SearchIcon size={14} />
+                                </div>
+                                {studentSearchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setStudentSearchQuery('')}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '8px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: 'var(--color-text-muted)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '2px'
+                                        }}
+                                        title="Hapus pencarian"
+                                    >
+                                        <XIcon size={12} />
+                                    </button>
+                                )}
+                            </div>
+
+                            <span style={{ fontSize: '0.813rem', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                                Menampilkan {sessionAttendances.filter(a => a.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim())).length} dari {sessionAttendances.length} mahasiswa
+                            </span>
+                        </div>
+
+                        <div className="table-container">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: '48px' }}>No</th>
+                                        <th>Nama Mahasiswa</th>
+                                        <th>Status</th>
+                                        <th>Keterangan / Catatan</th>
+                                        <th>Surat Bukti</th>
+                                        <th style={{ textAlign: 'right' }}>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sessionAttendances
+                                        .filter(a => a.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim()))
+                                        .map((att, index) => (
                                     <tr key={att.user_id}>
                                         <td>{index + 1}</td>
                                         <td style={{ fontWeight: 600 }}>{att.name}</td>
@@ -1564,9 +1623,17 @@ PJ MK Statistika Kelas TI25C`;
                                         </td>
                                     </tr>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                    {sessionAttendances.filter(a => a.name.toLowerCase().includes(studentSearchQuery.toLowerCase().trim())).length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--color-text-muted)' }}>
+                                                Tidak ditemukan mahasiswa dengan nama "{studentSearchQuery}"
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </div>
             )}
