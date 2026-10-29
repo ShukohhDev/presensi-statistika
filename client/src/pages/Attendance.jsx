@@ -572,7 +572,7 @@ export function Attendance() {
                                     </h3>
 
                                     <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', maxWidth: '520px', margin: '0 auto 18px', lineHeight: '1.55' }}>
-                                        Pada sesi perkuliahan ini, presensi kehadiran dicatat dan dikelola secara <strong>MANUAL</strong> langsung oleh <strong>Dosen Pengampu / PJ MK (Faqih Hidayatus Salam)</strong>.
+                                        Pada sesi perkuliahan ini, presensi kehadiran dicatat dan dikelola secara <strong>MANUAL</strong> langsung oleh <strong>PJ MK (Faqih Hidayatus Salam)</strong>.
                                     </p>
 
                                     <div style={{
