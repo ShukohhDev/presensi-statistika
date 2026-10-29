@@ -1,0 +1,24 @@
+# ==============================================================
+# Dependensi Server Python Presensi MK Statistika - Kelas TI25C
+# ==============================================================
+# Framework API Cepat dan Modern
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+
+# Database ORM (Mendukung MySQL dan SQLite)
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+cryptography>=44.0.0
+
+# Autentikasi Keamanan (Token JWT & Hash Password)
+pyjwt>=2.8.0
+bcrypt>=4.2.0
+
+# Pengunggahan Berkas (Foto Bukti & Tugas Mahasiswa)
+python-multipart>=0.0.20
+
+# Ekspor Laporan Rekap ke File Microsoft Excel (.xlsx)
+openpyxl>=3.1.5
+
+# Variabel Lingkungan (.env)
+python-dotenv>=1.0.0

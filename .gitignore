@@ -22,6 +22,15 @@ server/data/*.db
 server/data/*.db-shm
 server/data/*.db-wal
 server/data/*.db-journal
+server_python/*.db
+server_python/uploads/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
 
 # Editor & OS files
 .vscode/
