@@ -571,26 +571,9 @@ export function Attendance() {
                                         Pertemuan ke-{activeSession.meeting_number}: {activeSession.title}
                                     </h3>
 
-                                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', maxWidth: '520px', margin: '0 auto 18px', lineHeight: '1.55' }}>
+                                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem', maxWidth: '520px', margin: '0 auto 24px', lineHeight: '1.55' }}>
                                         Pada sesi perkuliahan ini, presensi kehadiran dicatat dan dikelola secara <strong>MANUAL</strong> langsung oleh <strong>PJ MK (Faqih Hidayatus Salam)</strong>.
                                     </p>
-
-                                    <div style={{
-                                        maxWidth: '480px',
-                                        margin: '0 auto 20px',
-                                        padding: '14px 16px',
-                                        backgroundColor: 'var(--color-bg-card)',
-                                        borderRadius: 'var(--radius-md)',
-                                        border: '1px solid var(--color-border)',
-                                        textAlign: 'left'
-                                    }}>
-                                        <div style={{ fontSize: '0.813rem', color: 'var(--color-text)', display: 'flex', alignItems: 'flex-start', gap: '10px', lineHeight: 1.5 }}>
-                                            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>ℹ️</span>
-                                            <span>
-                                                <strong>Catatan Mahasiswa:</strong> Tombol <em>"Kirim Presensi Kehadiran"</em> mandiri dinonaktifkan untuk sesi ini. Anda tidak perlu mengirim presensi mandiri. Status kehadiran Anda akan otomatis terupdate di halaman ini segera setelah diinput oleh PJ MK / Dosen.
-                                            </span>
-                                        </div>
-                                    </div>
 
                                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
                                         <Link to="/rekap" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none', fontWeight: 600 }}>
