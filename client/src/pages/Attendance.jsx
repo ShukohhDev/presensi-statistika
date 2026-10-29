@@ -436,20 +436,34 @@ export function Attendance() {
                             </p>
                         </div>
                     </div>
-                    {courseInfo?.whatsapp_group_link && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {courseInfo?.whatsapp_group_link && (
+                            <a
+                                href={courseInfo.whatsapp_group_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-secondary btn-xs"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 600, color: '#107C41' }}
+                                title="Buka Grup WhatsApp Kelas TI25C"
+                            >
+                                <WhatsAppIcon size={14} />
+                                <span>Grup WhatsApp</span>
+                                <ExternalLinkIcon size={12} />
+                            </a>
+                        )}
                         <a
-                            href={courseInfo.whatsapp_group_link}
+                            href="https://wa.me/6282316188656?text=Halo%20PJ%20MK%20(Faqih),%20saya%20mahasiswa%20Statistika%20TI25C%20ingin%20bertanya"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-secondary btn-xs"
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 600, color: '#107C41' }}
-                            title="Buka Grup WhatsApp Kelas TI25C"
+                            title="Hubungi PJ MK Statistika: Faqih Hidayatus Salam via WhatsApp"
                         >
                             <WhatsAppIcon size={14} />
-                            <span>Grup WhatsApp</span>
+                            <span>Hubungi PJ MK (Faqih)</span>
                             <ExternalLinkIcon size={12} />
                         </a>
-                    )}
+                    </div>
                 </div>
 
                 <div style={{ marginTop: '20px' }}>
@@ -590,6 +604,16 @@ export function Attendance() {
                                                 <WhatsAppIcon size={16} /> Grup WhatsApp Kelas
                                             </a>
                                         )}
+                                        <a
+                                            href="https://wa.me/6282316188656?text=Halo%20PJ%20MK%20(Faqih),%20saya%20mahasiswa%20Statistika%20TI25C%20ingin%20bertanya"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-secondary btn-sm"
+                                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#128C7E', borderColor: '#25D366', textDecoration: 'none' }}
+                                            title="Hubungi PJ MK Statistika: Faqih Hidayatus Salam via WhatsApp"
+                                        >
+                                            <WhatsAppIcon size={16} /> Hubungi PJ MK (Faqih)
+                                        </a>
                                     </div>
                                 </div>
                             ) : (

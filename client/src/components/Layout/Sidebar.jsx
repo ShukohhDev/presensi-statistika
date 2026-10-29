@@ -180,6 +180,18 @@ export function Sidebar({ isOpen, onClose }) {
                         <span style={{ color: 'var(--color-text)' }}>Grup WhatsApp MK</span>
                     </a>
 
+                    <a
+                        href="https://wa.me/6282316188656?text=Halo%20PJ%20MK%20(Faqih),%20saya%20mahasiswa%20Statistika%20TI25C%20ingin%20bertanya"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sidebar-item"
+                        style={{ color: '#25D366' }}
+                        title="Hubungi PJ MK Statistika: Faqih Hidayatus Salam via WhatsApp"
+                    >
+                        <WhatsAppIcon size={18} />
+                        <span style={{ color: 'var(--color-text)' }}>Hubungi PJ MK (Faqih)</span>
+                    </a>
+
                     <NavLink
                         to="/profil"
                         className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
