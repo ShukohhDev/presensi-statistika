@@ -285,7 +285,7 @@ def export_excel(
 
     # Baris Tiap Mahasiswa
     for idx, u in enumerate(users, start=1):
-        row = [idx, u.name]
+        row: list[object] = [idx, str(u.name)]
         atts = {a.session_id: a.status for a in db.query(models.Attendance).filter(models.Attendance.user_id == u.id).all()}
         
         h_cnt = i_cnt = s_cnt = a_cnt = 0
