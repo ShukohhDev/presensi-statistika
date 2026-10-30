@@ -48,7 +48,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     ).first()
 
     # Periksa apakah user ditemukan dan password cocok
-    if not user or not verify_password(req.password, user.password):
+    if not user or not verify_password(req.password, str(user.password)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Nama atau password salah."

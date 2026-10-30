@@ -265,7 +265,7 @@ def export_excel(
     course = db.query(models.CourseInfo).first()
 
     wb = Workbook()
-    ws = wb.active
+    ws = wb.active if wb.active is not None else wb.create_sheet("Rekapitulasi Kehadiran")
     ws.title = "Rekapitulasi Kehadiran"
 
     # Header Dokumen

@@ -88,8 +88,9 @@ def health_check():
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PYTHON_PORT", os.environ.get("PORT", 5000)))
     print(f"Server Python berjalan di: http://127.0.0.1:{port}")
     print(f"Buka dokumentasi interaktif API di: http://127.0.0.1:{port}/docs")
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    # Jika dijalankan di background (pythonw), langsung jalankan instance app
+    uvicorn.run(app, host="127.0.0.1", port=port)
 
