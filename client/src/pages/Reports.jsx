@@ -6,9 +6,6 @@ import { Modal } from '../components/Common/Modal';
 import {
     MessageSquareIcon,
     SendIcon,
-    CheckCircleIcon,
-    ClockIcon,
-    AlertCircleIcon,
     EditIcon,
     RefreshIcon
 } from '../components/Common/Icons';
@@ -51,7 +48,7 @@ export function Reports() {
         } finally {
             setLoading(false);
         }
-    }, [user?.role]);
+    }, [user]);
 
     useEffect(() => {
         loadReports();

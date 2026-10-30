@@ -6,7 +6,6 @@ import {
     UploadIcon,
     FileTextIcon,
     CheckCircleIcon,
-    AlertCircleIcon,
     ClockIcon,
     CalendarIcon,
     RefreshIcon,
@@ -97,7 +96,7 @@ export function Tasks() {
         } finally {
             setLoading(false);
         }
-    }, [user?.role]);
+    }, [user]);
 
     useEffect(() => {
         loadTaskData();

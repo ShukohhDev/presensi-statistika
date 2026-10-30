@@ -14,7 +14,6 @@ import {
     XIcon,
     SearchIcon,
     RefreshIcon,
-    CalendarIcon,
     WhatsAppIcon
 } from '../components/Common/Icons';
 

@@ -28,7 +28,6 @@ export function AdminDashboard() {
     const [sessions, setSessions] = useState([]);
     const [students, setStudents] = useState([]);
     const [activeSession, setActiveSession] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [adminTab, setAdminTab] = useState('sessions'); // 'sessions' | 'verification' | 'students'
 
     // Form open session
@@ -36,7 +35,6 @@ export function AdminDashboard() {
     const [sessionTitle, setSessionTitle] = useState('');
     const [durationHours, setDurationHours] = useState(0);
     const [durationMins, setDurationMins] = useState(15);
-    const [durationMinutes, setDurationMinutes] = useState(15);
     const [attendanceMode, setAttendanceMode] = useState('self'); // 'self' (Mahasiswa mandiri) | 'admin_only' (Manual oleh admin)
     const [updatingMode, setUpdatingMode] = useState(false);
     const [openingSession, setOpeningSession] = useState(false);
@@ -353,7 +351,7 @@ export function AdminDashboard() {
                 const currentTitle = activeSession?.id === targetId ? activeSession.title : (sessions.find(s => s.id === targetId)?.title);
                 const currentMeeting = activeSession?.id === targetId ? activeSession.meeting_number : (sessions.find(s => s.id === targetId)?.meeting_number);
                 if (currentTitle && currentMeeting) {
-                    finalText = finalText.replace(/Pertemuan: \d+ \([^\)]*\)/, `Pertemuan: ${currentMeeting} (${currentTitle})`);
+                    finalText = finalText.replace(/Pertemuan: \d+ \([^)]*\)/, `Pertemuan: ${currentMeeting} (${currentTitle})`);
                 }
                 await navigator.clipboard.writeText(finalText);
                 addToast('Format rekap WhatsApp berhasil disalin ke clipboard! Siap dikirim ke Dosen.', 'success');

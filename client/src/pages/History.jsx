@@ -4,7 +4,6 @@ import { useToast } from '../contexts/ToastContext';
 import {
     ClockIcon,
     FileTextIcon,
-    CheckCircleIcon,
     RefreshIcon,
     HistoryIcon,
     TrashIcon

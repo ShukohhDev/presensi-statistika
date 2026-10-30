@@ -8,8 +8,6 @@ import {
     PlusIcon,
     TrashIcon,
     ClockIcon,
-    ChevronDownIcon,
-    ChevronRightIcon
 } from '../components/Common/Icons';
 
 export function Calendar() {

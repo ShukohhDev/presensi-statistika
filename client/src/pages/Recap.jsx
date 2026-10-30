@@ -9,8 +9,7 @@ import {
     RefreshIcon,
     AlertCircleIcon,
     CheckCircleIcon,
-    WhatsAppIcon,
-    FileTextIcon
+    WhatsAppIcon
 } from '../components/Common/Icons';
 
 export function Recap() {
@@ -32,7 +31,7 @@ export function Recap() {
             const data = await api.getAttendanceRecap();
             setRecapData(sortStudentsByName(data.recap || []));
             setSessions(data.sessions || []);
-        } catch (err) {
+        } catch {
             console.error('Error loading recap:', err);
             addToast('Gagal memuat rekapitulasi kehadiran.', 'error');
         } finally {
@@ -50,7 +49,7 @@ export function Recap() {
             addToast('Menyiapkan file Excel rekap kehadiran resmi...', 'info');
             await api.exportExcel();
             addToast('Berkas Excel berhasil diunduh. Siap dikirim ke dosen pengampu.', 'success');
-        } catch (err) {
+        } catch {
             addToast(err.message || 'Gagal mengunduh file Excel.', 'error');
         } finally {
             setExportingExcel(false);
@@ -63,7 +62,7 @@ export function Recap() {
             addToast('Menyiapkan berkas CSV...', 'info');
             await api.exportCSV();
             addToast('Berkas CSV berhasil diunduh.', 'success');
-        } catch (err) {
+        } catch {
             addToast(err.message || 'Gagal mengunduh berkas CSV.', 'error');
         } finally {
             setExportingCSV(false);
@@ -95,7 +94,7 @@ export function Recap() {
 
             await navigator.clipboard.writeText(lines.join('\n'));
             addToast('Format rekap WhatsApp berhasil disalin ke clipboard! Siap dikirim ke dosen.', 'success');
-        } catch (err) {
+        } catch {
             addToast('Gagal menyalin format pesan WhatsApp.', 'error');
         } finally {
             setCopyingWA(false);

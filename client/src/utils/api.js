@@ -85,7 +85,7 @@ function saveStoredSessionOverride(sessionId, data) {
         const currentActive = localStorage.getItem('active_session_override');
         let currentParsed = {};
         if (currentActive) {
-            try { currentParsed = JSON.parse(currentActive); } catch (e) {}
+            try { currentParsed = JSON.parse(currentActive); } catch {}
         }
         const overrideData = {
             ...currentParsed,
@@ -156,7 +156,7 @@ export const api = {
             if (typeof window !== 'undefined' && window.localStorage) {
                 localStorage.removeItem('active_session_override');
             }
-        } catch (e) {}
+        } catch {}
         return request('/api/admin/session/open', {
             method: 'POST',
             body: JSON.stringify({ meeting_number, title, duration_minutes, attendance_mode }),
@@ -209,7 +209,7 @@ export const api = {
                     localStorage.removeItem(`session_override_${session_id}`);
                 }
             }
-        } catch (e) {}
+        } catch {}
         return request('/api/admin/session/close', {
             method: 'POST',
             body: JSON.stringify({ session_id }),

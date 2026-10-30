@@ -4,16 +4,10 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 import { api, API_URL } from '../utils/api';
 import {
-    UserIcon,
-    UploadIcon,
     CameraIcon,
-    CheckCircleIcon,
     ClockIcon,
-    MoonIcon,
-    SunIcon,
     FileTextIcon,
     DownloadIcon,
-    AlertCircleIcon,
     XIcon,
     WhatsAppIcon
 } from '../components/Common/Icons';
@@ -51,7 +45,7 @@ export function Profile() {
         } finally {
             setLoadingSummary(false);
         }
-    }, [user?.role]);
+    }, [user]);
 
     useEffect(() => {
         loadSummary();
@@ -113,7 +107,7 @@ export function Profile() {
         });
     };
 
-    const processAndUploadPhoto = async (rawFile) => {
+    const processAndUploadPhoto = useCallback(async (rawFile) => {
         if (!rawFile) return;
         if (rawFile.type && !rawFile.type.startsWith('image/')) {
             addToast('Berkas harus berupa gambar (JPG, PNG, WebP).', 'error');
@@ -136,7 +130,7 @@ export function Profile() {
         } finally {
             setUploadingPhoto(false);
         }
-    };
+    }, [user, updateUser, addToast]);
 
     const handlePhotoUpload = async (e) => {
         const file = e.target.files?.[0];
@@ -183,7 +177,7 @@ export function Profile() {
 
         window.addEventListener('paste', handlePaste);
         return () => window.removeEventListener('paste', handlePaste);
-    }, [user]);
+    }, [processAndUploadPhoto]);
 
     const handleSaveAutoLogout = async (e) => {
         e.preventDefault();
@@ -571,8 +565,7 @@ export function Profile() {
                                         <td>:</td>
                                         <td>{courseInfo?.lecturer_name || 'RIFQI HIDAYAT'} (NIP: {courseInfo?.lecturer_nip || '0401088701'})</td>
                                     </tr>
-                                    {(courseInfo?.lecturer_phone || '081282394648') && (
-                                        <tr>
+                                    <tr>
                                             <td style={{ padding: '3px 0', fontWeight: 600 }}>Kontak Dosen</td>
                                             <td>:</td>
                                             <td>
@@ -587,7 +580,6 @@ export function Profile() {
                                                 </a>
                                             </td>
                                         </tr>
-                                    )}
                                     <tr>
                                         <td style={{ padding: '3px 0', fontWeight: 600 }}>Hari & Jam Kuliah</td>
                                         <td>:</td>

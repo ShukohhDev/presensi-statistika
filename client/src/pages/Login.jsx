@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { UserIcon, LockIcon, EyeIcon, EyeOffIcon } from '../components/Common/Icons';
+import { EyeIcon, EyeOffIcon } from '../components/Common/Icons';
 import siteLogo from '../assets/logo-ketelitian.jpg';
 
 export function Login() {
