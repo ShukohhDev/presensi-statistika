@@ -4,7 +4,15 @@
 # Menggunakan Mapped bawaan SQLAlchemy 2.0 agar terbaca sempurna oleh IDE/Pylance.
 # ==============================================================
 
-from datetime import datetime, date as date_type, time as time_type
+from datetime import datetime, timezone, date as date_type, time as time_type
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def utc_today() -> date_type:
+    return datetime.now(timezone.utc).date()
 from typing import Optional, List
 from sqlalchemy import (
     Integer, String, Text, DateTime, ForeignKey, Date, Time
@@ -22,8 +30,8 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False, comment="Password terenkripsi (hash bcrypt)")
     role: Mapped[str] = mapped_column(String(20), default="user", nullable=False, comment="'user' (mahasiswa) atau 'admin' (PJ MK)")
     profile_photo: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, comment="Path foto profil pengguna")
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # Relasi ke data kehadiran dan tugas
     attendances: Mapped[List["Attendance"]] = relationship("Attendance", back_populates="user", cascade="all, delete-orphan")
@@ -44,7 +52,7 @@ class Session(Base):
     opened_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, comment="Waktu sesi presensi dibuka")
     closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, comment="Waktu sesi presensi ditutup")
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
 
     # Relasi ke catatan kehadiran mahasiswa di sesi ini
     attendances: Mapped[List["Attendance"]] = relationship("Attendance", back_populates="session", cascade="all, delete-orphan")
@@ -60,8 +68,8 @@ class Attendance(Base):
     status: Mapped[str] = mapped_column(String(20), default="alpha", nullable=False, comment="'hadir', 'izin', 'sakit', atau 'alpha'")
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True, comment="Keterangan atau alasan jika izin/sakit")
     evidence_image: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, comment="Path foto surat bukti dokter / izin")
-    submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, comment="Waktu presensi dikirim")
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now, comment="Waktu presensi dikirim")
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # Relasi balik ke User dan Session
     user: Mapped["User"] = relationship("User", back_populates="attendances")
@@ -82,8 +90,8 @@ class Task(Base):
     file_size: Mapped[int] = mapped_column(Integer, nullable=False, comment="Ukuran file dalam byte")
     google_drive_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     google_drive_link: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    submitted_date: Mapped[Optional[date_type]] = mapped_column(Date, default=datetime.utcnow().date)
-    submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
+    submitted_date: Mapped[Optional[date_type]] = mapped_column(Date, default=utc_today)
+    submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
 
     user: Mapped["User"] = relationship("User", back_populates="tasks")
 
@@ -98,7 +106,7 @@ class Assignment(Base):
     due_date: Mapped[date_type] = mapped_column(Date, nullable=False)
     due_time: Mapped[str] = mapped_column(String(10), default="23:59")
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
 
 
 # 6. Tabel Bank Materi Kuliah (Slide & Dataset)
@@ -116,7 +124,7 @@ class Material(Base):
     external_link: Mapped[Optional[str]] = mapped_column(String(500), nullable=True, comment="Link Google Drive materi")
     category: Mapped[str] = mapped_column(String(30), default="slide", comment="'slide' atau 'dataset'")
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
 
 
 # 7. Tabel Pengumuman Kuliah (Announcements)
@@ -127,8 +135,8 @@ class Announcement(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
 
 # 8. Tabel Kalender Akademik
@@ -143,7 +151,7 @@ class CalendarEvent(Base):
     event_type: Mapped[str] = mapped_column(String(30), default="kuliah", comment="'kuliah', 'tugas', 'ujian', 'lainnya'")
     location: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
 
 
 # 9. Tabel Laporan Kritik, Saran, dan Kendala Bug
@@ -157,8 +165,8 @@ class Report(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="baru", comment="'baru', 'diproses', 'selesai'")
     admin_response: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     user: Mapped["User"] = relationship("User", back_populates="reports")
 
@@ -182,7 +190,7 @@ class CourseInfo(Base):
     auto_close_time: Mapped[str] = mapped_column(String(10), default="15:30")
     skip_next_session: Mapped[int] = mapped_column(Integer, default=0)
     tolerance_minutes: Mapped[int] = mapped_column(Integer, default=30)
-    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
 
 # 11. Tabel Pengaturan Preferensi Mahasiswa

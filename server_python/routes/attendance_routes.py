@@ -7,7 +7,7 @@ import os
 import sys
 import shutil
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 # Menambahkan direktori server_python ke sys.path agar import modul selalu terbaca
@@ -134,7 +134,7 @@ async def submit_attendance(
     # 5. Simpan file foto bukti jika diunggah
     evidence_path = None
     if evidence:
-        filename = f"evidence-{current_user.id}-{int(datetime.utcnow().timestamp())}_{evidence.filename}"
+        filename = f"evidence-{current_user.id}-{int(datetime.now(timezone.utc).timestamp())}_{evidence.filename}"
         file_destination = os.path.join(UPLOAD_DIR, filename)
         with open(file_destination, "wb") as buffer:
             shutil.copyfileobj(evidence.file, buffer)
@@ -147,7 +147,7 @@ async def submit_attendance(
         status=status_hadir,
         note=note.strip() if note else None,
         evidence_image=evidence_path,
-        submitted_at=datetime.utcnow()
+        submitted_at=datetime.now(timezone.utc)
     )
     db.add(new_att)
     db.commit()

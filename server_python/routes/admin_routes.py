@@ -6,7 +6,7 @@
 import io
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 # Menambahkan direktori server_python ke sys.path agar import modul selalu terbaca
@@ -117,7 +117,7 @@ def open_session(
         status="open",
         duration_minutes=req.duration_minutes or 15,
         attendance_mode=req.attendance_mode or "self",
-        opened_at=datetime.utcnow(),
+        opened_at=datetime.now(timezone.utc),
         created_by=admin.id
     )
     db.add(new_session)
@@ -148,7 +148,7 @@ def close_session(
         )
 
     active.status = "closed"
-    active.closed_at = datetime.utcnow()
+    active.closed_at = datetime.now(timezone.utc)
     db.commit()
 
     return {"message": f"Sesi Pertemuan {active.meeting_number} berhasil ditutup."}
@@ -236,14 +236,14 @@ def update_student_attendance(
         att.status = req.status
         if req.note is not None:
             att.note = req.note
-        att.updated_at = datetime.utcnow()
+        att.updated_at = datetime.now(timezone.utc)
     else:
         new_att = models.Attendance(
             user_id=req.user_id,
             session_id=req.session_id,
             status=req.status,
             note=req.note,
-            submitted_at=datetime.utcnow()
+            submitted_at=datetime.now(timezone.utc)
         )
         db.add(new_att)
 
