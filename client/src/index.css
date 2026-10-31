@@ -1,11 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
 /* ==========================================================================
    WEBSITE PRESENSI MK STATISTIKA - KELAS TI25C
    Microsoft Fluent Design System
    Principles: Simplicity, Visual Depth, Modular Grid, High Legibility
    ========================================================================== */
 
+/* ---- Tailwind CSS Framework ---- */
+
+
 /* ---- Typography & Fonts ---- */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 
 /* ---- CSS Variables / Fluent Token System ---- */
 :root {
