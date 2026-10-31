@@ -9,7 +9,7 @@
 
 import '../index.css';
 import { initAuthFromStorage, getState, subscribeState } from './state.js';
-import { renderAppLayout } from './layout.js';
+import { renderAppLayout, updateActiveRoute } from './layout.js';
 import { renderLogin } from './views/loginView.js';
 import { renderAttendance } from './views/attendanceView.js';
 import { renderAdmin } from './views/adminView.js';
@@ -73,10 +73,12 @@ async function handleRouting() {
     }
 
     // 4. Pastikan Kerangka Tata Letak Utama (Layout) sudah terpasang
-    const layoutNeeded = `${user.role}-${route}`;
-    if (currentLayoutRendered !== layoutNeeded) {
+    const hasLayout = !!document.getElementById('app-layout');
+    if (!hasLayout || currentLayoutRendered !== user.role) {
         renderAppLayout(rootElement, navigate, route);
-        currentLayoutRendered = layoutNeeded;
+        currentLayoutRendered = user.role;
+    } else {
+        updateActiveRoute(route);
     }
 
     const mainContainer = document.getElementById('main-content');

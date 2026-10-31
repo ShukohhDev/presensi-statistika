@@ -20,7 +20,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from database import get_db
 import models
-from auth import get_current_user
+from auth import get_current_user, require_admin
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/attendance", tags=["Presensi Mahasiswa"])
 
@@ -277,3 +278,45 @@ def get_attendance_recap(
         ]
     }
 
+
+
+class UpdateAttendanceBody(BaseModel):
+    user_id: int
+    session_id: int
+    status: str
+    note: Optional[str] = None
+
+
+# 6. Endpoint PUT /api/attendance/update-status - Update status kehadiran oleh Admin
+@router.put("/update-status")
+def update_attendance_status(
+    body: UpdateAttendanceBody,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Admin mengubah status presensi mahasiswa (hadir, izin, sakit, alpha)."""
+    valid_statuses = ["hadir", "izin", "sakit", "alpha"]
+    if body.status.lower() not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Status kehadiran tidak valid.")
+
+    att = db.query(models.Attendance).filter(
+        models.Attendance.user_id == body.user_id,
+        models.Attendance.session_id == body.session_id
+    ).first()
+
+    if att:
+        att.status = body.status.lower()
+        if body.note is not None:
+            att.note = body.note
+    else:
+        att = models.Attendance(
+            user_id=body.user_id,
+            session_id=body.session_id,
+            status=body.status.lower(),
+            note=body.note,
+            submitted_at=datetime.now(timezone.utc)
+        )
+        db.add(att)
+
+    db.commit()
+    return {"message": "Status kehadiran berhasil diperbarui.", "status": body.status.lower()}

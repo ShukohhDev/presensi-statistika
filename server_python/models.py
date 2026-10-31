@@ -202,3 +202,29 @@ class UserSettings(Base):
     theme: Mapped[str] = mapped_column(String(50), default="cobalt-slate")
     dark_mode: Mapped[int] = mapped_column(Integer, default=0)
     auto_logout_minutes: Mapped[int] = mapped_column(Integer, default=30)
+
+
+# 12. Tabel Notifikasi Pengguna
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    type: Mapped[str] = mapped_column(String(30), default="info", comment="'info', 'warning', 'reminder', 'announcement'")
+    is_read: Mapped[int] = mapped_column(Integer, default=0)
+    created_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)
+
+
+# 13. Tabel Log Aktivitas Akun
+class ActivityLog(Base):
+    __tablename__ = "activity_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    action: Mapped[str] = mapped_column(String(50), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    metadata_info: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[Optional[datetime]] = mapped_column(DateTime, default=utc_now)

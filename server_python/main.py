@@ -9,18 +9,21 @@ Menyediakan API lengkap yang 100% kompatibel dengan frontend React/HTML/CSS.
 """
 
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # Import konfigurasi database dan pembuatan tabel
 from database import engine, Base
+import models
 
 # Import semua router (jalur API)
-from routes import auth_routes, attendance_routes, admin_routes, other_routes
+from routes import auth_routes, attendance_routes, admin_routes, other_routes, user_routes
+from seed import seed_initial_data
 
 # Otomatis membuat semua tabel di database (MySQL / SQLite) saat aplikasi pertama kali dijalankan
 Base.metadata.create_all(bind=engine)
+seed_initial_data()
 
 # Inisialisasi aplikasi FastAPI dengan dokumentasi otomatis (Swagger UI)
 app = FastAPI(
@@ -36,8 +39,10 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 allowed_origins = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://localhost:3000",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
     "http://127.0.0.1:3000",
     "https://presensi-statistika-ti25c.shukohdev.web.id",
     "https://presensi-statistika-ti25c.shukohh21.workers.dev"
@@ -65,6 +70,21 @@ app.include_router(auth_routes.router)        # Rute Login, Logout, Info Akun
 app.include_router(attendance_routes.router)  # Rute Presensi Mahasiswa
 app.include_router(admin_routes.router)       # Rute Pengelolaan Admin / Dosen
 app.include_router(other_routes.router)       # Rute Tugas, Materi, Kalender, dll.
+app.include_router(user_routes.router)        # Rute Profil, Pengaturan & Log Pengguna
+
+# Alias rute umum agar kompatibel penuh dengan berbagai format frontend
+from auth import get_current_user
+from database import get_db
+from sqlalchemy.orm import Session
+from routes.attendance_routes import get_active_session
+
+@app.get("/api/sessions/active")
+def get_active_session_alias(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Alias endpoint sesi aktif."""
+    return get_active_session(current_user=current_user, db=db)
 
 # ---------------------------------------------------------------------------
 # Endpoint Cek Kesehatan Sistem (Health Check)

@@ -135,45 +135,45 @@ export function renderAppLayout(rootElement, navigate, currentRoute) {
                     <div class="sidebar-section-title">Menu Utama</div>
 
                     ${isAdmin ? `
-                        <a href="#admin" class="sidebar-item ${currentRoute === 'admin' ? 'active' : ''}">
+                        <a href="#admin" data-route="admin" class="sidebar-item ${currentRoute === 'admin' ? 'active' : ''}">
                             ${shieldIcon('', 18)}
                             <span>Dashboard Admin</span>
                         </a>
                     ` : `
-                        <a href="#presensi" class="sidebar-item ${currentRoute === 'presensi' || currentRoute === 'attendance' ? 'active' : ''}">
+                        <a href="#presensi" data-route="presensi" class="sidebar-item ${currentRoute === 'presensi' || currentRoute === 'attendance' ? 'active' : ''}">
                             ${checkCircleIcon('', 18)}
                             <span>Presensi</span>
                         </a>
                     `}
 
-                    <a href="#rekap" class="sidebar-item ${currentRoute === 'rekap' ? 'active' : ''}">
+                    <a href="#rekap" data-route="rekap" class="sidebar-item ${currentRoute === 'rekap' ? 'active' : ''}">
                         ${barChartIcon('', 18)}
                         <span>Rekap Kehadiran</span>
                     </a>
 
-                    <a href="#tugas" class="sidebar-item ${currentRoute === 'tugas' ? 'active' : ''}">
+                    <a href="#tugas" data-route="tugas" class="sidebar-item ${currentRoute === 'tugas' ? 'active' : ''}">
                         ${uploadIcon('', 18)}
                         <span>${isAdmin ? 'Kelola Tugas' : 'Pengumpulan Tugas'}</span>
                     </a>
 
                     ${!isAdmin ? `
-                        <a href="#riwayat" class="sidebar-item ${currentRoute === 'riwayat' ? 'active' : ''}">
+                        <a href="#riwayat" data-route="riwayat" class="sidebar-item ${currentRoute === 'riwayat' ? 'active' : ''}">
                             ${historyIcon('', 18)}
                             <span>Riwayat</span>
                         </a>
                     ` : ''}
 
-                    <a href="#materi" class="sidebar-item ${currentRoute === 'materi' ? 'active' : ''}">
+                    <a href="#materi" data-route="materi" class="sidebar-item ${currentRoute === 'materi' ? 'active' : ''}">
                         ${bookOpenIcon('', 18)}
                         <span>Bank Materi Kuliah</span>
                     </a>
 
-                    <a href="#kalender" class="sidebar-item ${currentRoute === 'kalender' ? 'active' : ''}">
+                    <a href="#kalender" data-route="kalender" class="sidebar-item ${currentRoute === 'kalender' ? 'active' : ''}">
                         ${calendarIcon('', 18)}
                         <span>Kalender Akademik</span>
                     </a>
 
-                    <a href="#laporan" class="sidebar-item ${currentRoute === 'laporan' ? 'active' : ''}">
+                    <a href="#laporan" data-route="laporan" class="sidebar-item ${currentRoute === 'laporan' ? 'active' : ''}">
                         ${messageSquareIcon('', 18)}
                         <span>Laporan & Saran</span>
                     </a>
@@ -195,7 +195,7 @@ export function renderAppLayout(rootElement, navigate, currentRoute) {
                         <span style="color: var(--color-text);">Hubungi PJ MK (Faqih)</span>
                     </a>
 
-                    <a href="#profil" class="sidebar-item ${currentRoute === 'profil' ? 'active' : ''}">
+                    <a href="#profil" data-route="profil" class="sidebar-item ${currentRoute === 'profil' ? 'active' : ''}">
                         ${userIcon('', 18)}
                         <span>Profil & Pengaturan</span>
                     </a>
@@ -439,4 +439,18 @@ function setupAutoLogout(navigate) {
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
     events.forEach(ev => window.addEventListener(ev, resetTimer, { passive: true }));
     resetTimer();
+}
+
+
+/**
+ * Memperbarui status aktif tautan menu samping tanpa perlu merender ulang layout
+ */
+export function updateActiveRoute(currentRoute) {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    const normalized = (currentRoute === 'attendance' ? 'presensi' : currentRoute);
+    sidebar.querySelectorAll('.sidebar-item[data-route]').forEach(link => {
+        const itemRoute = link.getAttribute('data-route');
+        link.classList.toggle('active', itemRoute === normalized);
+    });
 }

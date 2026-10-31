@@ -317,3 +317,69 @@ def export_excel(
         headers={"Content-Disposition": "attachment; filename=rekap_kehadiran_statistika_TI25C.xlsx"}
     )
 
+
+
+# 8. Endpoint GET /api/admin/students - Daftar seluruh mahasiswa
+@router.get("/students")
+def get_students(
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Mengambil daftar seluruh mahasiswa kelas TI25C."""
+    users = db.query(models.User).order_by(models.User.name.asc()).all()
+    return {
+        "students": [
+            {
+                "id": u.id,
+                "name": u.name,
+                "role": u.role,
+                "profile_photo": u.profile_photo,
+                "created_at": u.created_at.isoformat() if u.created_at else None
+            }
+            for u in users
+        ]
+    }
+
+
+# 9. Endpoint GET /api/admin/sessions - Seluruh riwayat sesi perkuliahan
+@router.get("/sessions")
+def get_admin_sessions(
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Mengambil riwayat semua sesi perkuliahan untuk admin."""
+    sessions = db.query(models.Session).order_by(models.Session.meeting_number.desc()).all()
+    return {"sessions": sessions}
+
+
+# 10. Endpoint GET /api/admin/session/{session_id}/wa-summary - Salin Rekap WhatsApp
+@router.get("/session/{session_id}/wa-summary")
+def get_session_wa_summary(
+    session_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Membuat salinan format teks WhatsApp untuk rekapitulasi kehadiran perkuliahan."""
+    session = db.query(models.Session).filter(models.Session.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Sesi presensi tidak ditemukan.")
+
+    users = db.query(models.User).filter(models.User.role == "user").order_by(models.User.name.asc()).all()
+    attendances = db.query(models.Attendance).filter(models.Attendance.session_id == session_id).all()
+    att_map = {a.user_id: a.status for a in attendances}
+
+    lines = [
+        "*REKAPITULASI PRESENSI MK STATISTIKA*",
+        "Kelas: TI25C",
+        f"Pertemuan ke-{session.meeting_number}: {session.title}",
+        f"Waktu: {datetime.now().strftime('%d %B %Y')}",
+        "----------------------------------------"
+    ]
+    for idx, u in enumerate(users, 1):
+        st = att_map.get(u.id, "alpha").upper()
+        symbol = "✅" if st == "HADIR" else ("📝" if st == "IZIN" else ("🏥" if st == "SAKIT" else "❌"))
+        lines.append(f"{idx}. {u.name} [{symbol} {st}]")
+
+    lines.append("----------------------------------------")
+    lines.append("PJ MK: Faqih Hidayatus Salam (082316188656)")
+    return {"text": "\n".join(lines)}

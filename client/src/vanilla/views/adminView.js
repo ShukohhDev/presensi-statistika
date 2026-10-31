@@ -294,7 +294,6 @@ function attachAdminEvents(container, activeSession, sessions, students, nextMee
     container.querySelector('#tab-verification-btn')?.addEventListener('click', () => {
         activeTab = 'verification';
         renderAdmin(container, navigate);
-        loadSessionAttendances(container, activeSession?.id || (sessions[0]?.id));
     });
     container.querySelector('#tab-recap-btn')?.addEventListener('click', () => {
         activeTab = 'recap';
