@@ -5,6 +5,12 @@
 # ==============================================================
 
 from datetime import datetime, timezone, date as date_type, time as time_type
+from typing import Optional, List
+from sqlalchemy import (
+    Integer, String, Text, DateTime, ForeignKey, Date, Time
+)
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from database import Base
 
 
 def utc_now() -> datetime:
@@ -13,12 +19,6 @@ def utc_now() -> datetime:
 
 def utc_today() -> date_type:
     return datetime.now(timezone.utc).date()
-from typing import Optional, List
-from sqlalchemy import (
-    Integer, String, Text, DateTime, ForeignKey, Date, Time
-)
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from database import Base
 
 
 # 1. Tabel Pengguna (Mahasiswa dan Admin PJ MK)

@@ -401,11 +401,11 @@ def get_notifications(
 ):
     """Mengambil daftar notifikasi pengguna dan menghitung jumlah belum dibaca."""
     notifs = db.query(models.Notification).filter(
-        (models.Notification.user_id == current_user.id) | (models.Notification.user_id == None)
+        (models.Notification.user_id == current_user.id) | (models.Notification.user_id.is_(None))
     ).order_by(models.Notification.created_at.desc()).limit(50).all()
 
     unread_count = db.query(models.Notification).filter(
-        ((models.Notification.user_id == current_user.id) | (models.Notification.user_id == None)),
+        ((models.Notification.user_id == current_user.id) | (models.Notification.user_id.is_(None))),
         models.Notification.is_read == 0
     ).count()
 
