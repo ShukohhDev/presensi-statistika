@@ -1,11 +1,13 @@
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // Konfigurasi Vite untuk Presensi MK Statistika
-// Menggunakan Vanilla JavaScript, HTML5, CSS3, dan Tailwind CSS
+// Menggunakan React (JavaScript) dan Tailwind CSS
 export default defineConfig({
   plugins: [
-    tailwindcss()
+    tailwindcss(),
+    react()
   ],
   server: {
     port: 5174,
