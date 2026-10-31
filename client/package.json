@@ -6,19 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node -e \"const fs=require('fs');fs.copyFileSync('dist/index.html','dist/200.html')\"",
-    "lint": "oxlint",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "framer-motion": "^14.0.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
-    "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.0"
   },
