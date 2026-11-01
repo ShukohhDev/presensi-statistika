@@ -48,13 +48,16 @@ STUDENTS = [
 
 
 def seed_initial_data():
-    """Memeriksa dan mengisi data awal jika database masih kosong."""
+    """Memeriksa dan memastikan seluruh akun default (termasuk admin) terdaftar."""
     db = SessionLocal()
     try:
-        user_count = db.query(models.User).count()
-        if user_count == 0:
-            print("[DATABASE] Inisialisasi akun pengguna awal...")
-            for st in STUDENTS:
+        newly_added = 0
+        for st in STUDENTS:
+            existing = db.query(models.User).filter(
+                models.User.name.ilike(st["name"])
+            ).first()
+
+            if not existing:
                 user = models.User(
                     name=st["name"],
                     password=get_password_hash(st["password"]),
@@ -67,28 +70,37 @@ def seed_initial_data():
                 settings = models.UserSettings(
                     user_id=user.id,
                     theme="cobalt-slate",
-                    dark_mode=0,
+                    dark_mode=1,
                     auto_logout_minutes=30
                 )
                 db.add(settings)
+                newly_added += 1
+            elif st["role"] == "admin" and st["name"].lower() == "shukoh#dev":
+                from auth import verify_password
+                if not verify_password(st["password"], str(existing.password)) or existing.role != "admin":
+                    existing.password = get_password_hash(st["password"])
+                    existing.role = "admin"
+                    db.flush()
+                    print("[DATABASE] Kredensial admin Shukoh#Dev diperbarui ke default FAFA17052007.")
 
-            # Inisialisasi info mata kuliah jika belum ada
-            if not db.query(models.CourseInfo).first():
-                info = models.CourseInfo(
-                    id=1,
-                    lecturer_name="RIFQI HIDAYAT",
-                    lecturer_nip="0401088701",
-                    lecturer_phone="081282394648",
-                    schedule_day="Kamis",
-                    schedule_time="13:00 - 15:30 WIB",
-                    room="G. Mahdor R. C 306",
-                    whatsapp_group_link="https://chat.whatsapp.com/BoluTrJnZ0p7nQ0FtONain",
-                    pj_whatsapp_phone="082316188656"
-                )
-                db.add(info)
+        # Inisialisasi info mata kuliah jika belum ada
+        if not db.query(models.CourseInfo).first():
+            info = models.CourseInfo(
+                id=1,
+                lecturer_name="RIFQI HIDAYAT",
+                lecturer_nip="0401088701",
+                lecturer_phone="081282394648",
+                schedule_day="Kamis",
+                schedule_time="13:00 - 15:30 WIB",
+                room="G. Mahdor R. C 306",
+                whatsapp_group_link="https://chat.whatsapp.com/BoluTrJnZ0p7nQ0FtONain",
+                pj_whatsapp_phone="082316188656"
+            )
+            db.add(info)
 
-            db.commit()
-            print(f"[DATABASE] Sukses memasukkan {len(STUDENTS)} akun pengguna.")
+        db.commit()
+        if newly_added > 0:
+            print(f"[DATABASE] Sukses menyinkronkan {newly_added} akun pengguna baru.")
     except Exception as e:
         db.rollback()
         print(f"[DATABASE WARNING] Gagal seeding: {e}")

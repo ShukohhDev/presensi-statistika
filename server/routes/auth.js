@@ -30,7 +30,7 @@ router.post('/login', loginLimiter, (req, res) => {
             return res.status(401).json({ error: 'Nama atau password salah.' });
         }
 
-        const validPassword = bcrypt.compareSync(password, user.password);
+        const validPassword = bcrypt.compareSync(typeof password === 'string' ? password.trim() : password, user.password);
         if (!validPassword) {
             return res.status(401).json({ error: 'Nama atau password salah.' });
         }

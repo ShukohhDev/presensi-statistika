@@ -6,8 +6,8 @@
 
 const STATE_KEY_TOKEN = 'token';
 const STATE_KEY_USER = 'user';
-const STATE_KEY_THEME = 'fluent_theme';
-const STATE_KEY_DARK = 'fluent_dark';
+const STATE_KEY_THEME = 'theme';
+const STATE_KEY_DARK = 'darkMode';
 
 const subscribers = new Set();
 
@@ -15,7 +15,7 @@ const state = {
     token: null,
     user: null,
     theme: 'cobalt-slate',
-    darkMode: false,
+    darkMode: true,
     activeSession: null,
     notifications: [],
     unreadNotifCount: 0,
@@ -57,11 +57,21 @@ export function initAuthFromStorage() {
     }
 
     // Theme initialization
+    const savedTheme = localStorage.getItem(STATE_KEY_THEME);
+    if (savedTheme) {
+        state.theme = savedTheme;
+    } else {
+        state.theme = 'cobalt-slate';
+        localStorage.setItem(STATE_KEY_THEME, 'cobalt-slate');
+    }
+
     const savedDark = localStorage.getItem(STATE_KEY_DARK);
     if (savedDark !== null) {
         state.darkMode = savedDark === 'true';
     } else {
-        state.darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Default to dark mode matching the Cobalt-Slate identity
+        state.darkMode = true;
+        localStorage.setItem(STATE_KEY_DARK, 'true');
     }
 
     applyThemeToDOM();
@@ -102,6 +112,13 @@ export function clearAuth() {
     notifySubscribers('auth');
 }
 
+export function setTheme(newTheme) {
+    state.theme = newTheme;
+    localStorage.setItem(STATE_KEY_THEME, newTheme);
+    applyThemeToDOM();
+    notifySubscribers('theme');
+}
+
 export function toggleDarkMode() {
     state.darkMode = !state.darkMode;
     localStorage.setItem(STATE_KEY_DARK, state.darkMode ? 'true' : 'false');
@@ -110,12 +127,12 @@ export function toggleDarkMode() {
 }
 
 export function applyThemeToDOM() {
+    const currentTheme = state.theme || 'cobalt-slate';
+    document.documentElement.setAttribute('data-theme', currentTheme);
     if (state.darkMode) {
         document.documentElement.classList.add('dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
     } else {
         document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', 'light');
     }
 }
 
