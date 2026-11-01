@@ -2,7 +2,9 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, '..', 'data', 'presensi.db');
+const DB_PATH = process.env.VERCEL
+    ? path.join('/tmp', 'presensi.db')
+    : path.join(__dirname, '..', 'data', 'presensi.db');
 
 let db;
 
@@ -14,7 +16,11 @@ function getDb() {
         }
 
         db = new Database(DB_PATH);
-        db.pragma('journal_mode = WAL');
+        try {
+            db.pragma('journal_mode = WAL');
+        } catch (e) {
+            db.pragma('journal_mode = DELETE');
+        }
         db.pragma('foreign_keys = ON');
     }
     return db;
@@ -27,4 +33,4 @@ function closeDb() {
     }
 }
 
-module.exports = { getDb, closeDb };
+module.exports = { getDb, closeDb, DB_PATH };

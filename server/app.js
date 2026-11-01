@@ -9,9 +9,11 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const initDb = require('./database/init');
 initDb();
 
-// Mulai background scheduler presensi & kalender otomatis
-const { startScheduler } = require('./services/scheduler');
-startScheduler();
+// Mulai background scheduler presensi & kalender otomatis jika bukan serverless
+if (!process.env.VERCEL) {
+    const { startScheduler } = require('./services/scheduler');
+    startScheduler();
+}
 
 const app = express();
 const PORT = process.env.PORT || 7860;
@@ -94,10 +96,12 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Terjadi kesalahan internal server.' });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server berjalan di http://0.0.0.0:${PORT}`);
-    console.log(`Mode: ${process.env.NODE_ENV || 'development'}`);
-});
+// Start server jika bukan serverless
+if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server berjalan di http://0.0.0.0:${PORT}`);
+        console.log(`Mode: ${process.env.NODE_ENV || 'development'}`);
+    });
+}
 
 module.exports = app;
