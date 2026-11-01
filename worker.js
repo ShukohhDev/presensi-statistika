@@ -2,9 +2,9 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Proxy /api/* dan /uploads/* langsung ke backend Railway
+    // Proxy /api/* dan /uploads/* langsung ke backend Vercel resmi
     if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/uploads/')) {
-      const backendOrigin = 'https://presensi-statistika-ti25c-production.up.railway.app';
+      const backendOrigin = 'https://presensi-mk-statistika.vercel.app';
       const targetUrl = new URL(url.pathname + url.search, backendOrigin);
       return fetch(new Request(targetUrl, request));
     }
@@ -13,4 +13,3 @@ export default {
     return env.ASSETS.fetch(request);
   }
 };
-
