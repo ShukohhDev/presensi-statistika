@@ -71,13 +71,16 @@ const materialStorage = multer.diskStorage({
     }
 });
 
-// Filter berkas aman untuk tugas mahasiswa (mencegah executable/scripts berbahaya)
+// Filter berkas aman untuk tugas mahasiswa & materi (mencegah executable/scripts berbahaya & Stored XSS)
 const taskFileFilter = function (req, file, cb) {
     const ext = path.extname(file.originalname).toLowerCase();
-    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.sh', '.msi', '.vbs', '.scr', '.pif', '.reg'];
+    const dangerousExtensions = [
+        '.exe', '.bat', '.cmd', '.sh', '.msi', '.vbs', '.scr', '.pif', '.reg',
+        '.html', '.htm', '.xhtml', '.svg', '.php', '.jsp', '.asp', '.aspx', '.cgi', '.pl', '.jar', '.js', '.mjs'
+    ];
     
     if (dangerousExtensions.includes(ext)) {
-        return cb(new Error('Format berkas executable/script berbahaya ditolak demi keamanan sistem.'), false);
+        return cb(new Error('Format berkas tidak diizinkan demi keamanan sistem (dilarang mengunggah berkas executable/script/HTML).'), false);
     }
     cb(null, true);
 };
@@ -102,6 +105,7 @@ const uploadProfile = multer({
 
 const uploadMaterial = multer({
     storage: materialStorage,
+    fileFilter: taskFileFilter,
     limits: { fileSize: 50 * 1024 * 1024 } // Maksimal 50MB untuk slide & modul perkuliahan
 });
 

@@ -28,6 +28,21 @@ UPLOAD_MATERIALS = os.path.join(os.path.dirname(__file__), "..", "uploads", "mat
 os.makedirs(UPLOAD_TASKS, exist_ok=True)
 os.makedirs(UPLOAD_MATERIALS, exist_ok=True)
 
+DANGEROUS_EXTENSIONS = {
+    '.exe', '.bat', '.cmd', '.sh', '.msi', '.vbs', '.scr', '.pif', '.reg',
+    '.html', '.htm', '.xhtml', '.svg', '.php', '.jsp', '.asp', '.aspx', '.cgi', '.pl', '.jar', '.js', '.mjs'
+}
+
+def validate_safe_file(filename: Optional[str]):
+    if not filename:
+        return
+    ext = os.path.splitext(filename)[1].lower()
+    if ext in DANGEROUS_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail="Format berkas tidak diizinkan demi keamanan sistem (dilarang mengunggah berkas executable/script/HTML)."
+        )
+
 
 # --- 1. BANK MATERI KULIAH ---
 @router.get("/materials")
@@ -58,6 +73,7 @@ async def upload_material(
     file_size = 0
 
     if file:
+        validate_safe_file(file.filename)
         file_name = file.filename
         file_type = file.content_type
         save_name = f"material-p{meeting_number}-{int(datetime.now(timezone.utc).timestamp())}_{file_name}"
@@ -246,6 +262,7 @@ async def upload_task(
     file_size = 0
 
     if file:
+        validate_safe_file(file.filename)
         file_name = file.filename
         file_type = file.content_type
         save_name = f"task-{current_user.id}-{int(datetime.now(timezone.utc).timestamp())}_{file_name}"
