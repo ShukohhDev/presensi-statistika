@@ -16,6 +16,7 @@ if (!process.env.VERCEL) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 7860;
 
 // Security Headers (CSP disesuaikan agar font Google & aset statis berjalan mulus)
@@ -99,7 +100,7 @@ app.use((err, req, res, next) => {
     if (err.message && err.message.includes('file')) {
         return res.status(400).json({ error: err.message });
     }
-    res.status(500).json({ error: 'Terjadi kesalahan internal server.' });
+    res.status(500).json({ error: 'Terjadi kesalahan internal server.', details: err.message });
 });
 
 // Start server jika bukan serverless

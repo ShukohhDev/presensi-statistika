@@ -11,6 +11,7 @@ const loginLimiter = rateLimit({
     limit: 10,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
+    validate: { trustProxy: false },
     message: { error: 'Terlalu banyak percobaan login. Mohon tunggu 15 menit sebelum mencoba kembali.' }
 });
 

@@ -8,9 +8,16 @@ function initDb() {
         const db = getDb();
 
         // 1. Eksekusi skema dasar jika belum ada
+        let schema = '';
         const schemaPath = path.join(__dirname, 'schema.sql');
         if (fs.existsSync(schemaPath)) {
-            const schema = fs.readFileSync(schemaPath, 'utf-8');
+            schema = fs.readFileSync(schemaPath, 'utf-8');
+        } else {
+            try {
+                schema = require('./schema');
+            } catch (e) {}
+        }
+        if (schema) {
             db.exec(schema);
         }
 
