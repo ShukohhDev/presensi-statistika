@@ -4,11 +4,18 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 // Pastikan folder uploads dan subfoldernya ada
-const uploadsDir = path.join(__dirname, '..', 'uploads');
+const uploadsDir = process.env.VERCEL
+    ? path.join('/tmp', 'uploads')
+    : path.join(__dirname, '..', 'uploads');
+
 ['evidence', 'tasks', 'profiles', 'materials'].forEach(sub => {
     const subDir = path.join(uploadsDir, sub);
-    if (!fs.existsSync(subDir)) {
-        fs.mkdirSync(subDir, { recursive: true });
+    try {
+        if (!fs.existsSync(subDir)) {
+            fs.mkdirSync(subDir, { recursive: true });
+        }
+    } catch (e) {
+        console.warn(`Gagal membuat folder uploads/${sub}:`, e.message);
     }
 });
 
