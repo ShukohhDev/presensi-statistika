@@ -16,7 +16,8 @@ load_dotenv()
 # - Jika ingin menggunakan MySQL, cukup isi DATABASE_URL di file .env:
 #   Contoh MySQL: mysql+pymysql://root:password@localhost:3306/presensi_statistika
 _default_sqlite_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "presensi_lokal.db")).replace("\\", "/")
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{_default_sqlite_path}")
+_env_db_url = (os.getenv("DATABASE_URL") or "").strip()
+DATABASE_URL = _env_db_url if _env_db_url else f"sqlite:///{_default_sqlite_path}"
 
 # 3. Buat Engine Koneksi Database
 if DATABASE_URL.startswith("sqlite"):
